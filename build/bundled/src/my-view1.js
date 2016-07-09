@@ -20,7 +20,6 @@ window.dispatch = (action) => {
 	processNextAction()
 }
 
-
 window.droneMapView = () => ({
   is: 'my-view1',
   properties: {
@@ -44,10 +43,6 @@ window.droneMapView = () => ({
 					"<h3>" + strike.location + "</h3>" +
 					"<p>" + strike.date + "</p>" +
 				"</div>"
-
-      if (i === 30) {
-        dynamicEl.open = true
-      }
 
       map.appendChild(dynamicEl);
     })
