@@ -13,9 +13,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 
-<dom-module id="my-view2">
+<dom-module id="incident-list">
   <template>
-
 		<iron-list items="[[incidents]]" as="item">
 			<template>
         <style>
@@ -51,7 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div>
           <div class="card">
             <h1>[[item.country]]</h1>
-            <p>[[item.location]]</p>
+           <p>[[item.location]]</p>
             <p>[[item.narrative]]</p>
           </div>
         </div>
@@ -62,5 +61,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     Polymer(window.listView());
   </script>
-
 </dom-module>

@@ -20,22 +20,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="my-icons.html">
+<script src="./controllers.js"></script>
 
 <dom-module id="my-app">
 
   <template>
 
     <style>
-      *::-webkit-scrollbar {
-        background:transparent;
-      }
-      *::-webkit-scrollbar-track {
-        background:transparent;
-      }
-
       :host {
         display: block;
-        --app-primary-color: #2c3e50;
+        --app-primary-color: #252839;
         --app-secondary-color: black;
       }
 
@@ -69,44 +63,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     </style>
 
-    <app-location route="{{route}}"></app-location>
+    <app-location route="{{route}}" use-hash-as-path></app-location>
     <app-route
         route="{{route}}"
         pattern="/:page"
         data="{{routeData}}"
         tail="{{subroute}}"></app-route>
+		<app-route
+			route="{{subroute}}"
+	 		pattern="/:id"
+			data="{{subrouteData}}">
+    </app-route>
 
     <app-drawer-layout fullbleed>
 
       <!-- Drawer content -->
-      <app-drawer>
+      <app-drawer id="sidebar">
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="/view1">View One</a>
-          <a name="view2" href="/view2">View Two</a>
-          <a name="view3" href="/view3">View Three</a>
+
+          <a name="map" href="#/map">Incident Map</a>
+          <a name="list" href="#/list">Narratives List</a>
+          <a name="stats" href="#/stats">Wall of stats</a>
+
         </iron-selector>
       </app-drawer>
 
       <!-- Main content -->
-      <app-header-layout has-scrolling-region>
-        <app-header style="height: 210px;" condenses fixed>
+      <app-header-layout >
+        <app-header reveals>
           <app-toolbar style="height: 64px;">
             <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+
             <div title>Drone strikes</div>
+
           </app-toolbar>
         </app-header>
-
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
+
+          <drone-map name="map"></drone-map>
+          <incident-list name="list"></incident-list>
+          <drone-stats name="stats"></drone-stats>
+
         </iron-pages>
-
       </app-header-layout>
-
     </app-drawer-layout>
-
   </template>
 
   <script>
@@ -123,6 +124,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           observer: '_pageChanged'
         },
 
+        id: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_subrouteChanged'
+        },
+
       },
 
       observers: [
@@ -130,13 +137,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       _routePageChanged: function(page) {
-        this.page = page || 'view1';
+        this.page = page || 'map';
       },
 
       _pageChanged: function(page) {
+        window.dispatch("/incidents")
         // load page import on demand.
         this.importHref(
-          this.resolveUrl('my-' + page + '.html'), null, null, true);
+          this.resolveUrl(page + '.html'), null, null, true);
       }
 
     });

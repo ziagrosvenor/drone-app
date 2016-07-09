@@ -28,12 +28,12 @@ app.get('/incidents', function(req, res, next) {
     return res.json({incidents: data})
   // Handle the get for this route
   fetch("http://api.dronestre.am/data")
-    .then(function(_res) {
-      return _res.json()
+    .then(function(droneRes) {
+      return droneRes.json()
     })
     .then(function(json) {
       data = json.strike.splice(
-        json.strike.length - 101,
+        json.strike.length - 201,
         json.strike.length - 1
       )
 
@@ -47,4 +47,4 @@ app.get('/incidents', function(req, res, next) {
 });
 
 
-app.listen(3005, function() {console.log("don")})
+app.listen(process.env.PORT || 3005, function() {console.log("don")})
