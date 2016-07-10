@@ -1,5 +1,5 @@
 import R from "ramda"
 
 export const strikesByCountry = (state) => (R.filter(
-	(incident) => R.toLower(incident.country) === state.selectedCountry
-)(state.incidents))
+	(strike) => R.toLower(strike.country) === state.selectedCountry
+)(state.strikes))

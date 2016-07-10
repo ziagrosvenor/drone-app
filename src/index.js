@@ -1,12 +1,16 @@
 import store from "./app/store"
+import { routerFactory } from "./app/router"
 import { appCtrl } from "./app/controller"
-import { mapCtrl } from "./pages/map/map"
+import { mapCtrl, mapRouteSpec } from "./pages/map/map"
 import { statsCtrl } from "./pages/stats/stats"
-import { listCtrl } from "./pages/list/list"
+import { listCtrl, listRouteSpec } from "./pages/list/list"
 
-console.log(store)
+const router = routerFactory(store, {
+  map: mapRouteSpec,
+  list: listRouteSpec,
+})
 
-window.appCtrl = appCtrl(store)
+window.appCtrl = appCtrl(router, store)
 window.mapCtrl = mapCtrl(store)
 window.statsCtrl = statsCtrl(store)
 window.listCtrl = listCtrl(store)

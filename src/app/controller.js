@@ -1,4 +1,4 @@
-import {selectCountry, selectTab} from "./action-creators"
+import {selectCountry, selectTab, fetchStrikes} from "./action-creators"
 
 const tabCountryMap = {
 	"0": "yemen",
@@ -6,14 +6,28 @@ const tabCountryMap = {
 	"2": "somalia"
 }
 
-export const appCtrl = ({store, dispatch}) => ({
+const pageDataFilterOptions = {
+  map: {
+    takeLast: 150,
+  },
+  list: {
+    country: "yemen",
+    takeLast: 15,
+  },
+}
+
+export const appCtrl = (router, {store, dispatch}) => ({
 	is: 'my-app',
 	selectTab(e) {
 		const tab = e.target.id.split("tab")[1]
 		const country = tabCountryMap[tab]
 
+    // Update app state
 		dispatch(selectTab(tab))
 		dispatch(selectCountry(country))
+
+    // Fetch resource - TODO loading state
+    dispatch(fetchStrikes({takeLast: 20, country}))
 	},
 	properties: {
 
@@ -40,7 +54,8 @@ export const appCtrl = ({store, dispatch}) => ({
 	},
 
 	_pageChanged: function(page) {
-		dispatch("/incidents")
+    router(page)
+
 		// load page import on demand.
 		this.importHref(
 			this.resolveUrl(`./pages/${page}/${page}.html`), null, null, true);

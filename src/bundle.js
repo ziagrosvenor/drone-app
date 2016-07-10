@@ -3400,6 +3400,628 @@ if (typeof define !== "undefined" && define !== null && define.amd != null) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],2:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'use strict';
+
+// If obj.hasOwnProperty has been overridden, then calling
+// obj.hasOwnProperty(prop) will break.
+// See: https://github.com/joyent/node/issues/1707
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+module.exports = function(qs, sep, eq, options) {
+  sep = sep || '&';
+  eq = eq || '=';
+  var obj = {};
+
+  if (typeof qs !== 'string' || qs.length === 0) {
+    return obj;
+  }
+
+  var regexp = /\+/g;
+  qs = qs.split(sep);
+
+  var maxKeys = 1000;
+  if (options && typeof options.maxKeys === 'number') {
+    maxKeys = options.maxKeys;
+  }
+
+  var len = qs.length;
+  // maxKeys <= 0 means that we should not limit keys count
+  if (maxKeys > 0 && len > maxKeys) {
+    len = maxKeys;
+  }
+
+  for (var i = 0; i < len; ++i) {
+    var x = qs[i].replace(regexp, '%20'),
+        idx = x.indexOf(eq),
+        kstr, vstr, k, v;
+
+    if (idx >= 0) {
+      kstr = x.substr(0, idx);
+      vstr = x.substr(idx + 1);
+    } else {
+      kstr = x;
+      vstr = '';
+    }
+
+    k = decodeURIComponent(kstr);
+    v = decodeURIComponent(vstr);
+
+    if (!hasOwnProperty(obj, k)) {
+      obj[k] = v;
+    } else if (isArray(obj[k])) {
+      obj[k].push(v);
+    } else {
+      obj[k] = [obj[k], v];
+    }
+  }
+
+  return obj;
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+},{}],3:[function(require,module,exports){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'use strict';
+
+var stringifyPrimitive = function(v) {
+  switch (typeof v) {
+    case 'string':
+      return v;
+
+    case 'boolean':
+      return v ? 'true' : 'false';
+
+    case 'number':
+      return isFinite(v) ? v : '';
+
+    default:
+      return '';
+  }
+};
+
+module.exports = function(obj, sep, eq, name) {
+  sep = sep || '&';
+  eq = eq || '=';
+  if (obj === null) {
+    obj = undefined;
+  }
+
+  if (typeof obj === 'object') {
+    return map(objectKeys(obj), function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (isArray(obj[k])) {
+        return map(obj[k], function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
+        }).join(sep);
+      } else {
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+      }
+    }).join(sep);
+
+  }
+
+  if (!name) return '';
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+function map (xs, f) {
+  if (xs.map) return xs.map(f);
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    res.push(f(xs[i], i));
+  }
+  return res;
+}
+
+var objectKeys = Object.keys || function (obj) {
+  var res = [];
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
+  }
+  return res;
+};
+
+},{}],4:[function(require,module,exports){
+'use strict';
+
+exports.decode = exports.parse = require('./decode');
+exports.encode = exports.stringify = require('./encode');
+
+},{"./decode":2,"./encode":3}],5:[function(require,module,exports){
+// the whatwg-fetch polyfill installs the fetch() function
+// on the global object (window or self)
+//
+// Return that as the export for use in Webpack, Browserify etc.
+require('whatwg-fetch');
+module.exports = self.fetch.bind(self);
+
+},{"whatwg-fetch":6}],6:[function(require,module,exports){
+(function(self) {
+  'use strict';
+
+  if (self.fetch) {
+    return
+  }
+
+  var support = {
+    searchParams: 'URLSearchParams' in self,
+    iterable: 'Symbol' in self && 'iterator' in Symbol,
+    blob: 'FileReader' in self && 'Blob' in self && (function() {
+      try {
+        new Blob()
+        return true
+      } catch(e) {
+        return false
+      }
+    })(),
+    formData: 'FormData' in self,
+    arrayBuffer: 'ArrayBuffer' in self
+  }
+
+  function normalizeName(name) {
+    if (typeof name !== 'string') {
+      name = String(name)
+    }
+    if (/[^a-z0-9\-#$%&'*+.\^_`|~]/i.test(name)) {
+      throw new TypeError('Invalid character in header field name')
+    }
+    return name.toLowerCase()
+  }
+
+  function normalizeValue(value) {
+    if (typeof value !== 'string') {
+      value = String(value)
+    }
+    return value
+  }
+
+  // Build a destructive iterator for the value list
+  function iteratorFor(items) {
+    var iterator = {
+      next: function() {
+        var value = items.shift()
+        return {done: value === undefined, value: value}
+      }
+    }
+
+    if (support.iterable) {
+      iterator[Symbol.iterator] = function() {
+        return iterator
+      }
+    }
+
+    return iterator
+  }
+
+  function Headers(headers) {
+    this.map = {}
+
+    if (headers instanceof Headers) {
+      headers.forEach(function(value, name) {
+        this.append(name, value)
+      }, this)
+
+    } else if (headers) {
+      Object.getOwnPropertyNames(headers).forEach(function(name) {
+        this.append(name, headers[name])
+      }, this)
+    }
+  }
+
+  Headers.prototype.append = function(name, value) {
+    name = normalizeName(name)
+    value = normalizeValue(value)
+    var list = this.map[name]
+    if (!list) {
+      list = []
+      this.map[name] = list
+    }
+    list.push(value)
+  }
+
+  Headers.prototype['delete'] = function(name) {
+    delete this.map[normalizeName(name)]
+  }
+
+  Headers.prototype.get = function(name) {
+    var values = this.map[normalizeName(name)]
+    return values ? values[0] : null
+  }
+
+  Headers.prototype.getAll = function(name) {
+    return this.map[normalizeName(name)] || []
+  }
+
+  Headers.prototype.has = function(name) {
+    return this.map.hasOwnProperty(normalizeName(name))
+  }
+
+  Headers.prototype.set = function(name, value) {
+    this.map[normalizeName(name)] = [normalizeValue(value)]
+  }
+
+  Headers.prototype.forEach = function(callback, thisArg) {
+    Object.getOwnPropertyNames(this.map).forEach(function(name) {
+      this.map[name].forEach(function(value) {
+        callback.call(thisArg, value, name, this)
+      }, this)
+    }, this)
+  }
+
+  Headers.prototype.keys = function() {
+    var items = []
+    this.forEach(function(value, name) { items.push(name) })
+    return iteratorFor(items)
+  }
+
+  Headers.prototype.values = function() {
+    var items = []
+    this.forEach(function(value) { items.push(value) })
+    return iteratorFor(items)
+  }
+
+  Headers.prototype.entries = function() {
+    var items = []
+    this.forEach(function(value, name) { items.push([name, value]) })
+    return iteratorFor(items)
+  }
+
+  if (support.iterable) {
+    Headers.prototype[Symbol.iterator] = Headers.prototype.entries
+  }
+
+  function consumed(body) {
+    if (body.bodyUsed) {
+      return Promise.reject(new TypeError('Already read'))
+    }
+    body.bodyUsed = true
+  }
+
+  function fileReaderReady(reader) {
+    return new Promise(function(resolve, reject) {
+      reader.onload = function() {
+        resolve(reader.result)
+      }
+      reader.onerror = function() {
+        reject(reader.error)
+      }
+    })
+  }
+
+  function readBlobAsArrayBuffer(blob) {
+    var reader = new FileReader()
+    reader.readAsArrayBuffer(blob)
+    return fileReaderReady(reader)
+  }
+
+  function readBlobAsText(blob) {
+    var reader = new FileReader()
+    reader.readAsText(blob)
+    return fileReaderReady(reader)
+  }
+
+  function Body() {
+    this.bodyUsed = false
+
+    this._initBody = function(body) {
+      this._bodyInit = body
+      if (typeof body === 'string') {
+        this._bodyText = body
+      } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
+        this._bodyBlob = body
+      } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
+        this._bodyFormData = body
+      } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
+        this._bodyText = body.toString()
+      } else if (!body) {
+        this._bodyText = ''
+      } else if (support.arrayBuffer && ArrayBuffer.prototype.isPrototypeOf(body)) {
+        // Only support ArrayBuffers for POST method.
+        // Receiving ArrayBuffers happens via Blobs, instead.
+      } else {
+        throw new Error('unsupported BodyInit type')
+      }
+
+      if (!this.headers.get('content-type')) {
+        if (typeof body === 'string') {
+          this.headers.set('content-type', 'text/plain;charset=UTF-8')
+        } else if (this._bodyBlob && this._bodyBlob.type) {
+          this.headers.set('content-type', this._bodyBlob.type)
+        } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
+          this.headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8')
+        }
+      }
+    }
+
+    if (support.blob) {
+      this.blob = function() {
+        var rejected = consumed(this)
+        if (rejected) {
+          return rejected
+        }
+
+        if (this._bodyBlob) {
+          return Promise.resolve(this._bodyBlob)
+        } else if (this._bodyFormData) {
+          throw new Error('could not read FormData body as blob')
+        } else {
+          return Promise.resolve(new Blob([this._bodyText]))
+        }
+      }
+
+      this.arrayBuffer = function() {
+        return this.blob().then(readBlobAsArrayBuffer)
+      }
+
+      this.text = function() {
+        var rejected = consumed(this)
+        if (rejected) {
+          return rejected
+        }
+
+        if (this._bodyBlob) {
+          return readBlobAsText(this._bodyBlob)
+        } else if (this._bodyFormData) {
+          throw new Error('could not read FormData body as text')
+        } else {
+          return Promise.resolve(this._bodyText)
+        }
+      }
+    } else {
+      this.text = function() {
+        var rejected = consumed(this)
+        return rejected ? rejected : Promise.resolve(this._bodyText)
+      }
+    }
+
+    if (support.formData) {
+      this.formData = function() {
+        return this.text().then(decode)
+      }
+    }
+
+    this.json = function() {
+      return this.text().then(JSON.parse)
+    }
+
+    return this
+  }
+
+  // HTTP methods whose capitalization should be normalized
+  var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+
+  function normalizeMethod(method) {
+    var upcased = method.toUpperCase()
+    return (methods.indexOf(upcased) > -1) ? upcased : method
+  }
+
+  function Request(input, options) {
+    options = options || {}
+    var body = options.body
+    if (Request.prototype.isPrototypeOf(input)) {
+      if (input.bodyUsed) {
+        throw new TypeError('Already read')
+      }
+      this.url = input.url
+      this.credentials = input.credentials
+      if (!options.headers) {
+        this.headers = new Headers(input.headers)
+      }
+      this.method = input.method
+      this.mode = input.mode
+      if (!body) {
+        body = input._bodyInit
+        input.bodyUsed = true
+      }
+    } else {
+      this.url = input
+    }
+
+    this.credentials = options.credentials || this.credentials || 'omit'
+    if (options.headers || !this.headers) {
+      this.headers = new Headers(options.headers)
+    }
+    this.method = normalizeMethod(options.method || this.method || 'GET')
+    this.mode = options.mode || this.mode || null
+    this.referrer = null
+
+    if ((this.method === 'GET' || this.method === 'HEAD') && body) {
+      throw new TypeError('Body not allowed for GET or HEAD requests')
+    }
+    this._initBody(body)
+  }
+
+  Request.prototype.clone = function() {
+    return new Request(this)
+  }
+
+  function decode(body) {
+    var form = new FormData()
+    body.trim().split('&').forEach(function(bytes) {
+      if (bytes) {
+        var split = bytes.split('=')
+        var name = split.shift().replace(/\+/g, ' ')
+        var value = split.join('=').replace(/\+/g, ' ')
+        form.append(decodeURIComponent(name), decodeURIComponent(value))
+      }
+    })
+    return form
+  }
+
+  function headers(xhr) {
+    var head = new Headers()
+    var pairs = (xhr.getAllResponseHeaders() || '').trim().split('\n')
+    pairs.forEach(function(header) {
+      var split = header.trim().split(':')
+      var key = split.shift().trim()
+      var value = split.join(':').trim()
+      head.append(key, value)
+    })
+    return head
+  }
+
+  Body.call(Request.prototype)
+
+  function Response(bodyInit, options) {
+    if (!options) {
+      options = {}
+    }
+
+    this.type = 'default'
+    this.status = options.status
+    this.ok = this.status >= 200 && this.status < 300
+    this.statusText = options.statusText
+    this.headers = options.headers instanceof Headers ? options.headers : new Headers(options.headers)
+    this.url = options.url || ''
+    this._initBody(bodyInit)
+  }
+
+  Body.call(Response.prototype)
+
+  Response.prototype.clone = function() {
+    return new Response(this._bodyInit, {
+      status: this.status,
+      statusText: this.statusText,
+      headers: new Headers(this.headers),
+      url: this.url
+    })
+  }
+
+  Response.error = function() {
+    var response = new Response(null, {status: 0, statusText: ''})
+    response.type = 'error'
+    return response
+  }
+
+  var redirectStatuses = [301, 302, 303, 307, 308]
+
+  Response.redirect = function(url, status) {
+    if (redirectStatuses.indexOf(status) === -1) {
+      throw new RangeError('Invalid status code')
+    }
+
+    return new Response(null, {status: status, headers: {location: url}})
+  }
+
+  self.Headers = Headers
+  self.Request = Request
+  self.Response = Response
+
+  self.fetch = function(input, init) {
+    return new Promise(function(resolve, reject) {
+      var request
+      if (Request.prototype.isPrototypeOf(input) && !init) {
+        request = input
+      } else {
+        request = new Request(input, init)
+      }
+
+      var xhr = new XMLHttpRequest()
+
+      function responseURL() {
+        if ('responseURL' in xhr) {
+          return xhr.responseURL
+        }
+
+        // Avoid security warnings on getResponseHeader when not allowed by CORS
+        if (/^X-Request-URL:/m.test(xhr.getAllResponseHeaders())) {
+          return xhr.getResponseHeader('X-Request-URL')
+        }
+
+        return
+      }
+
+      xhr.onload = function() {
+        var options = {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers: headers(xhr),
+          url: responseURL()
+        }
+        var body = 'response' in xhr ? xhr.response : xhr.responseText
+        resolve(new Response(body, options))
+      }
+
+      xhr.onerror = function() {
+        reject(new TypeError('Network request failed'))
+      }
+
+      xhr.ontimeout = function() {
+        reject(new TypeError('Network request failed'))
+      }
+
+      xhr.open(request.method, request.url, true)
+
+      if (request.credentials === 'include') {
+        xhr.withCredentials = true
+      }
+
+      if ('responseType' in xhr && support.blob) {
+        xhr.responseType = 'blob'
+      }
+
+      request.headers.forEach(function(value, name) {
+        xhr.setRequestHeader(name, value)
+      })
+
+      xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
+    })
+  }
+  self.fetch.polyfill = true
+})(typeof self !== 'undefined' ? self : this);
+
+},{}],7:[function(require,module,exports){
 //  Ramda v0.21.0
 //  https://github.com/ramda/ramda
 //  (c) 2013-2016 Scott Sauyet, Michael Hurley, and David Chambers
@@ -12185,50 +12807,83 @@ if (typeof define !== "undefined" && define !== null && define.amd != null) {
 
 }.call(this));
 
-},{}],3:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
+exports.fetchStrikes = undefined;
 exports.selectTab = selectTab;
 exports.selectCountry = selectCountry;
 exports.setLoading = setLoading;
 
+var _ramda = require("ramda");
+
+var _ramda2 = _interopRequireDefault(_ramda);
+
+var _isomorphicFetch = require("isomorphic-fetch");
+
+var _isomorphicFetch2 = _interopRequireDefault(_isomorphicFetch);
+
+var _querystring = require("querystring");
+
+var _querystring2 = _interopRequireDefault(_querystring);
+
 var _constants = require("./constants");
 
-function selectTab(selectedTab) {
-	var payload = {
-		selectedTab: selectedTab
-	};
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	return {
-		type: _constants.SELECT_TAB,
-		payload: payload
-	};
+var fetchStrikes = exports.fetchStrikes = function fetchStrikes() {
+  var filter = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  return {
+    type: _constants.FETCH_STRIKES,
+    payload: function payload(state) {
+      var _filter = _ramda2.default.map(_ramda2.default.when(_ramda2.default.is(Function), function (filter) {
+        return filter(state);
+      }), filter);
+
+      var query = _querystring2.default.stringify(_filter);
+
+      return (0, _isomorphicFetch2.default)("/strikes?" + query).then(function (res) {
+        if (res.ok) return res.json();
+      }).catch(console.log);
+    }
+  };
+};
+
+function selectTab(selectedTab) {
+  var payload = {
+    selectedTab: selectedTab
+  };
+
+  return {
+    type: _constants.SELECT_TAB,
+    payload: payload
+  };
 }
 
 function selectCountry(selectedCountry) {
-	var payload = {
-		selectedCountry: selectedCountry
-	};
+  var payload = {
+    selectedCountry: selectedCountry
+  };
 
-	return {
-		type: _constants.SELECT_COUNTRY,
-		payload: payload
-	};
+  return {
+    type: _constants.SELECT_COUNTRY,
+    payload: payload
+  };
 }
 
 function setLoading(isLoading) {
-	return {
-		type: _constants.TOGGLE_LOADING,
-		payload: function payload(state) {
-			return { isLoading: isLoading };
-		}
-	};
+  return {
+    type: _constants.TOGGLE_LOADING,
+    payload: function payload(state) {
+      return { isLoading: isLoading };
+    }
+  };
 }
 
-},{"./constants":4}],4:[function(require,module,exports){
+},{"./constants":9,"isomorphic-fetch":5,"querystring":4,"ramda":7}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12237,8 +12892,9 @@ Object.defineProperty(exports, "__esModule", {
 var SELECT_TAB = exports.SELECT_TAB = Symbol("SELECT_TAB");
 var SELECT_COUNTRY = exports.SELECT_COUNTRY = Symbol("SELECT_COUNTRY");
 var TOGGLE_LOADING = exports.TOGGLE_LOADING = Symbol("TOGGLE_LOADING");
+var FETCH_STRIKES = exports.FETCH_STRIKES = Symbol("FETCH_STRIKES");
 
-},{}],5:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12254,7 +12910,17 @@ var tabCountryMap = {
 	"2": "somalia"
 };
 
-var appCtrl = exports.appCtrl = function appCtrl(_ref) {
+var pageDataFilterOptions = {
+	map: {
+		takeLast: 150
+	},
+	list: {
+		country: "yemen",
+		takeLast: 15
+	}
+};
+
+var appCtrl = exports.appCtrl = function appCtrl(router, _ref) {
 	var store = _ref.store;
 	var dispatch = _ref.dispatch;
 	return {
@@ -12263,8 +12929,12 @@ var appCtrl = exports.appCtrl = function appCtrl(_ref) {
 			var tab = e.target.id.split("tab")[1];
 			var country = tabCountryMap[tab];
 
+			// Update app state
 			dispatch((0, _actionCreators.selectTab)(tab));
 			dispatch((0, _actionCreators.selectCountry)(country));
+
+			// Fetch resource - TODO loading state
+			dispatch((0, _actionCreators.fetchStrikes)({ takeLast: 20, country: country }));
 		},
 
 		properties: {
@@ -12290,18 +12960,36 @@ var appCtrl = exports.appCtrl = function appCtrl(_ref) {
 		},
 
 		_pageChanged: function _pageChanged(page) {
-			dispatch("/incidents");
+			router(page);
+
 			// load page import on demand.
 			this.importHref(this.resolveUrl("./pages/" + page + "/" + page + ".html"), null, null, true);
 		}
 	};
 };
 
-},{"./action-creators":3}],6:[function(require,module,exports){
+},{"./action-creators":8}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
+});
+exports.routerFactory = undefined;
+
+var _actionCreators = require("./action-creators");
+
+var routerFactory = exports.routerFactory = function routerFactory(_ref, pageSpec) {
+  var dispatch = _ref.dispatch;
+  return function (path) {
+    dispatch((0, _actionCreators.fetchStrikes)(pageSpec[path]));
+  };
+};
+
+},{"./action-creators":8}],12:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
 });
 exports.store = undefined;
 
@@ -12326,47 +13014,58 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var isFunction = _ramda2.default.is(Function);
 
 var state = {
-	selectedTab: "0",
-	selectedCountry: "yemen",
-	incidents: [],
-	isLoading: true
+  selectedTab: "0",
+  selectedCountry: "yemen",
+  incidents: [],
+  strikes: [],
+  isLoading: true
 };
 
 var bus = new _baconjs2.default.Bus();
+var store = exports.store = bus.toProperty();
 
-function handleSyncAction(payload) {
-	return isFunction(payload) ? _ramda2.default.merge(state, payload(state)) : _ramda2.default.merge(state, payload);
+function handleSyncAction(state, payload) {
+  return isFunction(payload) ? _ramda2.default.merge(state, payload(state)) : _ramda2.default.merge(state, payload);
+}
+
+function handleFetchAction(state, payload) {
+  var fetched = payload(state).then(function (payload) {
+    state = _ramda2.default.mergeAll([state, payload]);
+    return state;
+  });
+
+  return _baconjs2.default.fromPromise(fetched);
 }
 
 var syncActions = (_syncActions = {}, _defineProperty(_syncActions, _constants.SELECT_COUNTRY, handleSyncAction), _defineProperty(_syncActions, _constants.SELECT_TAB, handleSyncAction), _syncActions);
 
-var store = exports.store = bus.toProperty();
+var fetchActions = _defineProperty({}, _constants.FETCH_STRIKES, handleFetchAction);
+
 function dispatch(action) {
-	var maybeSyncHandler = syncActions[action.type];
+  var maybeSyncHandler = syncActions[action.type];
 
-	if (maybeSyncHandler) {
-		state = maybeSyncHandler(action.payload);
-		return bus.push(state);
-	}
+  if (maybeSyncHandler) {
+    state = maybeSyncHandler(state, action.payload);
+    return bus.push(state);
+  }
 
-	if (state.incidents.length > 100) return bus.push(state);
+  var maybeFetchHandler = fetchActions[action.type];
 
-	bus.plug(_baconjs2.default.fromPromise(fetch(action).then(function (res) {
-		return res.json();
-	}).then(function (res) {
-		state = _ramda2.default.mergeAll([state, res, { isLoading: false }]);
-		return state;
-	})));
+  if (maybeFetchHandler) {
+    return bus.plug(maybeFetchHandler(state, action.payload));
+  }
 }
 
 exports.default = { store: store, dispatch: dispatch };
 
-},{"./constants":4,"baconjs":1,"ramda":2}],7:[function(require,module,exports){
+},{"./constants":9,"baconjs":1,"ramda":7}],13:[function(require,module,exports){
 "use strict";
 
 var _store = require("./app/store");
 
 var _store2 = _interopRequireDefault(_store);
+
+var _router = require("./app/router");
 
 var _controller = require("./app/controller");
 
@@ -12378,22 +13077,33 @@ var _list = require("./pages/list/list");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-console.log(_store2.default);
+var router = (0, _router.routerFactory)(_store2.default, {
+  map: _map.mapRouteSpec,
+  list: _list.listRouteSpec
+});
 
-window.appCtrl = (0, _controller.appCtrl)(_store2.default);
+window.appCtrl = (0, _controller.appCtrl)(router, _store2.default);
 window.mapCtrl = (0, _map.mapCtrl)(_store2.default);
 window.statsCtrl = (0, _stats.statsCtrl)(_store2.default);
 window.listCtrl = (0, _list.listCtrl)(_store2.default);
 
-},{"./app/controller":5,"./app/store":6,"./pages/list/list":8,"./pages/map/map":10,"./pages/stats/stats":12}],8:[function(require,module,exports){
+},{"./app/controller":10,"./app/router":11,"./app/store":12,"./pages/list/list":14,"./pages/map/map":16,"./pages/stats/stats":18}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.listCtrl = undefined;
+exports.listCtrl = exports.listRouteSpec = undefined;
 
 var _selectors = require("../selectors");
+
+var listRouteSpec = exports.listRouteSpec = {
+	country: function country(state) {
+		return state.selectedCountry;
+	},
+
+	takeLast: 15
+};
 
 var listCtrl = exports.listCtrl = function listCtrl(_ref) {
 	var store = _ref.store;
@@ -12410,6 +13120,8 @@ var listCtrl = exports.listCtrl = function listCtrl(_ref) {
 		updateState: function updateState(state) {
 			this.isLoading = state.isLoading;
 			this.incidents = (0, _selectors.strikesByCountry)(state);
+			var list = this.$$("iron-list");
+			list.notifyResize();
 		},
 		ready: function ready() {
 			var _this = this;
@@ -12426,7 +13138,7 @@ var listCtrl = exports.listCtrl = function listCtrl(_ref) {
 	};
 };
 
-},{"../selectors":11}],9:[function(require,module,exports){
+},{"../selectors":17}],15:[function(require,module,exports){
 module.exports=[
 		{
 			"featureType": "water",
@@ -12592,13 +13304,13 @@ module.exports=[
 		}
 		]
 
-},{}],10:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.mapCtrl = undefined;
+exports.mapCtrl = exports.mapRouteSpec = undefined;
 
 var _selectors = require("../selectors");
 
@@ -12608,6 +13320,10 @@ var _mapStyle2 = _interopRequireDefault(_mapStyle);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var mapRouteSpec = exports.mapRouteSpec = {
+  takeLast: 150
+};
+
 var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
   var store = _ref.store;
   var dispatch = _ref.dispatch;
@@ -12616,12 +13332,16 @@ var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
     updateState: function updateState(state) {
       var map = this.$$("google-map");
       var strikes = (0, _selectors.strikesByCountry)(state);
+      map.styles = _mapStyle2.default;
+
+      if (!strikes.length) {
+        return;
+      }
 
       map.latitude = strikes[0].lat;
       map.longitude = strikes[0].lon;
-      map.styles = _mapStyle2.default;
 
-      state.incidents.map(function (strike, i) {
+      state.strikes.map(function (strike, i) {
         var dynamicEl = document.createElement("google-map-marker");
 
         dynamicEl.latitude = strike.lat;
@@ -12648,7 +13368,7 @@ function templateMarker(content) {
   "<div>\n    <p>" + content.narrative + "</p>\n    <p>" + (content.town || content.location) + "</p>\n  </div>";
 }
 
-},{"../selectors":11,"./map-style":9}],11:[function(require,module,exports){
+},{"../selectors":17,"./map-style":15}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12663,12 +13383,12 @@ var _ramda2 = _interopRequireDefault(_ramda);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var strikesByCountry = exports.strikesByCountry = function strikesByCountry(state) {
-	return _ramda2.default.filter(function (incident) {
-		return _ramda2.default.toLower(incident.country) === state.selectedCountry;
-	})(state.incidents);
+	return _ramda2.default.filter(function (strike) {
+		return _ramda2.default.toLower(strike.country) === state.selectedCountry;
+	})(state.strikes);
 };
 
-},{"ramda":2}],12:[function(require,module,exports){
+},{"ramda":7}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12756,4 +13476,4 @@ var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
   };
 };
 
-},{"ramda":2}]},{},[7]);
+},{"ramda":7}]},{},[13]);

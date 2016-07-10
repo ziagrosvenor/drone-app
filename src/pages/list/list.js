@@ -1,5 +1,10 @@
 import {strikesByCountry} from "../selectors"
 
+export const listRouteSpec = {
+  country(state) { return state.selectedCountry },
+  takeLast: 15,
+}
+
 export const listCtrl = ({store, dispatch}) => ({
   is: 'incident-list',
 	properties: {
@@ -12,6 +17,8 @@ export const listCtrl = ({store, dispatch}) => ({
   updateState(state) {
 		this.isLoading = state.isLoading
 		this.incidents = strikesByCountry(state)
+    const list = this.$$("iron-list")
+    list.notifyResize()
   },
   ready() {
 		// TODO fix this
