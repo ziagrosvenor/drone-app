@@ -4,17 +4,25 @@
   "description": "This template is a starting point for building apps using a drawer-based layout.  The layout is provided by `app-layout` elements.",
   "main": "server.js",
   "directories": {
-    "test": "test",
-    "start": "node ./build/bundled/server.js"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "test"
   },
   "author": "",
   "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "build": "browserify ./src/index.js -o ./src/bundle.js -t [ babelify --presets [ es2015 ] ]",
+    "build-watch": "npm run build && watch -p './src/*/*.js' -c 'npm run build'"
+  },
   "dependencies": {
+    "baconjs": "^0.7.84",
     "express": "^4.14.0",
-    "isomorphic-fetch": "^2.2.1"
+    "isomorphic-fetch": "^2.2.1",
+    "ramda": "^0.21.0"
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.9.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.0.1"
   }
 }

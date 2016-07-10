@@ -1,83 +1,4 @@
-var _this
-const initialState = {}
-window.update = Bacon.constant({})
-window.actions = []
-
-function convertActionObservableProp(action) {
-	return Bacon.fromPromise(fetch(action).then((res) => res.json())).toProperty()
-}
-
-function processNextAction() {
-	const action = window.actions.pop()
-
-	window.update = Bacon.combineWith(function(p1, p2) {
-  	return Object.assign({}, p1, p2);
-	}, window.update, convertActionObservableProp(action));
-}
-
-window.dispatch = (action) => {
-	window.actions.push(action)
-	processNextAction()
-}
-
-
-window.droneMapView = () => ({
-  is: 'drone-map',
-  properties: {
-    map: Object,
-  },
-  updateState(state) {
-    const map = _this.$$("google-map")
-
-    state.incidents.map((strike, i) => {
-      var dynamicEl =
-        document.createElement("google-map-marker");
-
-      dynamicEl.latitude = strike.lat
-      dynamicEl.longitude = strike.lon;
-      dynamicEl.clickEvents = true
-      dynamicEl.title = strike.location
-
-      dynamicEl.innerHTML =
-        "<div>" +
-					"<p>" + strike.narrative + "</p>" +
-					"<p>" + strike.town || strike.location + "</p>" +
-				"</div>"
-
-      if (i === 30) {
-        dynamicEl.open = true
-      }
-
-      map.appendChild(dynamicEl);
-    })
-  },
-  ready: function() {
-    _this = this
-		window.update.onValue((state) => {
-			_this.updateState(state)
-		})
-
-    const map = _this.$$("google-map")
-    map.latitude = 31.5782126;
-    map.longitude = 68.8674589;
-  },
-})
-
-window.listView = () => ({
-  is: 'incident-list',
-	properties: {
-  	incidents: Array,
-	},
-  updateState(state) {
-		this.incidents = state.incidents.splice(0, 50)
-  },
-  ready: function() {
-		this.incidents = [{}, {}, {}, {}]
-		window.update.onValue((state) => {
-			this.updateState(state)
-		})
-  },
-})
+import R from "ramda"
 
 const chartCols = [
   {label: "Location", type: "string"},
@@ -149,7 +70,7 @@ const getTotalInjuries = R.memoize(R.compose(
 	R.map(R.path(["injuries"]))
 ))
 
-window.chartView = () => ({
+export const statsCtrl = ({store}) => ({
   is: 'drone-stats',
 	properties: {
   	cols: Array,
@@ -172,11 +93,11 @@ window.chartView = () => ({
 		this.totalCivilDeaths = getTotalCivilDeaths(pickBubbleChartData(state.incidents))
 		this.totalInjuries = getTotalInjuries(pickBubbleChartData(state.incidents))
   },
-  ready: function() {
-		window.update.onValue((state) => {
+  ready() {
+		store.onValue((state) => {
+			if (!state.incidents.length)
+				return
 			this.updateState(state)
 		})
   },
 })
-
-

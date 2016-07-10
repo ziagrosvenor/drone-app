@@ -19,8 +19,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="my-icons.html">
-<script src="./controllers.js"></script>
+<script src="./bundle.js"></script>
 
 <dom-module id="my-app">
 
@@ -60,7 +62,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         padding-left: 32px;
       }
 
-
+			#list-tabs {
+				background-color: var(--app-primary-color);
+        color: #fff;
+			}
+			
+			.overlay {
+				position: absolute;
+				left: 0;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				background: #fff;
+				z-index: 9999;
+			}
     </style>
 
     <app-location route="{{route}}" use-hash-as-path></app-location>
@@ -76,7 +95,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </app-route>
 
     <app-drawer-layout fullbleed>
-
       <!-- Drawer content -->
       <app-drawer id="sidebar">
         <app-toolbar>Menu</app-toolbar>
@@ -98,6 +116,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <div title>Drone strikes</div>
 
           </app-toolbar>
+					<paper-tabs selected="0" id="list-tabs"  noink>
+						<paper-tab id="tab0" on-click="selectTab">Yemen</paper-tab>
+						<paper-tab id="tab1" on-click="selectTab">Pakistan</paper-tab>
+						<paper-tab id="tab2" on-click="selectTab">Somalia</paper-tab>
+					</paper-tabs>
         </app-header>
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name">
 
@@ -109,46 +132,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </app-header-layout>
     </app-drawer-layout>
   </template>
-
   <script>
-
-    Polymer({
-
-      is: 'my-app',
-
-      properties: {
-
-        page: {
-          type: String,
-          reflectToAttribute: true,
-          observer: '_pageChanged'
-        },
-
-        id: {
-          type: String,
-          reflectToAttribute: true,
-          observer: '_subrouteChanged'
-        },
-
-      },
-
-      observers: [
-        '_routePageChanged(routeData.page)'
-      ],
-
-      _routePageChanged: function(page) {
-        this.page = page || 'map';
-      },
-
-      _pageChanged: function(page) {
-        window.dispatch("/incidents")
-        // load page import on demand.
-        this.importHref(
-          this.resolveUrl(page + '.html'), null, null, true);
-      }
-
-    });
-
+    Polymer(appCtrl);
   </script>
-
 </dom-module>
