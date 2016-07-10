@@ -9,8 +9,7 @@ from the data. With links to news articles and related tweets for each incident.
 ## Setup
 
 ##### Prerequisites
-
-Install [polymer-cli](https://github.com/Polymer/polymer-cli):
+Install `npm` and `bower`
 
     npm i
     bower install
