@@ -14,3 +14,9 @@ Install `npm` and `bower`
     npm i
     bower install
     npm run build && node server
+    
+## Tech
+- Polymer web components
+- BaconJS
+- Ramda
+- Express
