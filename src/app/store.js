@@ -9,6 +9,7 @@ let state = {
 	selectedCountry: "yemen",
 	incidents: [],
 	strikes: [],
+	fetchedQueries: [],
 	isLoading: true,
 }
 
@@ -24,7 +25,16 @@ function handleSyncAction(state, payload) {
 function handleFetchAction(state, payload) {
   const fetched = payload(state)
     .then((payload) => {
-      state = R.mergeAll([state, payload])
+
+      if (payload.query)
+        state.fetchedQueries.push(payload.query)
+
+        state.fetchedQueries =
+          R.dropRepeats(state.fetchedQueries)
+
+      if (payload.strikes)
+        state.strikes = R.concat(state.strikes, payload.strikes)
+
       return state
     })
 
