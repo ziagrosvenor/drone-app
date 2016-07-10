@@ -1,7 +1,14 @@
 var express = require("express")
 var fetch = require("isomorphic-fetch")
+var Promise = require("bluebird")
 
 var app = express()
+
+var R = require("ramda")
+
+var strikesByCountry = (country, strikes) => (R.filter(
+	(strike) => R.toLower(strike.country) === country
+)(strikes))
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -11,7 +18,7 @@ app.use(function(req, res, next) {
 
 app.use(express.static('./'));
 
-var data
+var strikes
 
 var countryImageMap = {
 	"Yemen": "http://www.yemenembassy.ca/eng/PressCoverage/images/Yemen.jpg",
@@ -23,28 +30,53 @@ var countryImageMap = {
 	"Hadhramaut Province": "http://english.aawsat.com/wp-content/uploads/2014/08/AQAP-in-Hadhramaut.jpg",
 }
 
+app.get("/strikes", (req, res) => {
+  getStrikes()
+    .then((strikes) => {
+      const country = req.query.country || false
+      const takeLast = req.query.takeLast || false
+
+      var _strikes = country ?
+        strikesByCountry(country, strikes) :
+        strikes
+
+      _strikes = takeLast ?
+        R.takeLast(takeLast, _strikes) :
+        _strikes
+
+      return res.json({strikes: _strikes})
+    })
+})
+
 app.get('/incidents', function(req, res, next) {
-  if (data)
+  getStrikes().then((strikes) => {
+    var data = R.takeLast(200, strikes)
     return res.json({incidents: data})
-  // Handle the get for this route
-  fetch("http://api.dronestre.am/data")
+  })
+});
+
+
+app.listen(process.env.PORT || 3005,
+  () => (
+    console.log("don") && getStrikes()
+      .then(() => console.log("HAS DATA"))
+  )
+)
+
+function getStrikes() {
+  if (strikes)
+    return Promise.resolve(strikes)
+
+  return fetch("http://api.dronestre.am/data")
     .then(function(droneRes) {
       return droneRes.json()
     })
     .then(function(json) {
-      data = json.strike.splice(
-        json.strike.length - 201,
-        json.strike.length - 1
-      )
+      strikes = json.strike.map(function(d) {
+        d.imgUrl = countryImageMap[d.location] || countryImageMap[d.country] || countryImageMap["Somalia"]
+        return d
+      })
 
-			data = data.map(function(d) {
-				d.imgUrl = countryImageMap[d.location] || countryImageMap[d.country] || countryImageMap["Somalia"]
-				return d
-			})
-
-      return res.json({incidents: data})
+      return strikes
     })
-});
-
-
-app.listen(process.env.PORT || 3005, function() {console.log("don")})
+}

@@ -12,10 +12,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "build": "browserify ./src/index.js -o ./src/bundle.js -t [ babelify --presets [ es2015 ] ]",
-    "build-watch": "npm run build && watch -p './src/*/*.js' -c 'npm run build'"
+    "build-watch": "npm run build && watch -p './src/**/*.js' -c 'npm run build'"
   },
   "dependencies": {
     "baconjs": "^0.7.84",
+    "bluebird": "^3.4.1",
     "express": "^4.14.0",
     "isomorphic-fetch": "^2.2.1",
     "ramda": "^0.21.0"
