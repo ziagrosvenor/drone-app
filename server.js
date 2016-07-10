@@ -1,6 +1,7 @@
 var express = require("express")
 var fetch = require("isomorphic-fetch")
 var Promise = require("bluebird")
+var PORT = process.env.PORT || 3005
 
 var app = express()
 
@@ -56,12 +57,7 @@ app.get('/incidents', function(req, res, next) {
 });
 
 
-app.listen(process.env.PORT || 3005,
-  () => (
-    console.log("don") && getStrikes()
-      .then(() => console.log("HAS DATA"))
-  )
-)
+app.listen(PORT, () => console.log("don"))
 
 function getStrikes() {
   if (strikes)
@@ -80,3 +76,5 @@ function getStrikes() {
       return strikes
     })
 }
+
+getStrikes()
