@@ -72,32 +72,32 @@ const getTotalInjuries = R.memoize(R.compose(
 
 export const statsCtrl = ({store}) => ({
   is: 'drone-stats',
-	properties: {
-  	cols: Array,
+  properties: {
+    cols: Array,
     rows: Array,
     deadlyArea: Object,
     bubbleChartData: Array,
-	},
+  },
   updateState(state) {
     const locationDeathPairs = sumDeathsForLocations(state.incidents)
 
     this.deadlyArea = locationDeathPairs.reduce((prev, current) => (prev.deaths > current.deaths) ? prev : current)
-		this.cols = chartCols
+    this.cols = chartCols
     this.rows = R.map(R.values, locationDeathPairs)
 
-		const bubbleChartRows = pickBubbleChartValues(state.incidents)
-		this.bubbleRows = bubbleChartRows
-		this.bubbleCols = bubbleChartCols
+    const bubbleChartRows = pickBubbleChartValues(state.incidents)
+    this.bubbleRows = bubbleChartRows
+    this.bubbleCols = bubbleChartCols
 
-		this.totalDeaths = getTotalDeaths(pickBubbleChartData(state.incidents))
-		this.totalCivilDeaths = getTotalCivilDeaths(pickBubbleChartData(state.incidents))
-		this.totalInjuries = getTotalInjuries(pickBubbleChartData(state.incidents))
+    this.totalDeaths = getTotalDeaths(pickBubbleChartData(state.incidents))
+    this.totalCivilDeaths = getTotalCivilDeaths(pickBubbleChartData(state.incidents))
+    this.totalInjuries = getTotalInjuries(pickBubbleChartData(state.incidents))
   },
   ready() {
-		store.onValue((state) => {
-			if (!state.incidents.length)
-				return
-			this.updateState(state)
-		})
+    store.onValue((state) => {
+      if (!state.incidents.length)
+        return
+      this.updateState(state)
+    })
   },
 })
