@@ -41,7 +41,7 @@ export const mapCtrl = ({store, dispatch}) => ({
 })
 
 function templateMarker(content) {
-  `<div>
+  return `<div>
     <p>${content.narrative}</p>
     <p>${content.town || content.location}</p>
   </div>`
