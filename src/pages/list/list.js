@@ -21,13 +21,8 @@ export const listCtrl = ({store, dispatch}) => ({
     list.notifyResize()
   },
   ready() {
-    // TODO fix this
-    this.incidents = [{}, {}, {}, {}]
-
-    setTimeout(() => {
-      store.onValue((state) => {
-        this.updateState(state)
-      })
-    }, 200)
+    store.onValue((state) => {
+      this.updateState(state)
+    })
   },
 })
