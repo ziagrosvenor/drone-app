@@ -7,27 +7,27 @@ export const listRouteSpec = {
 
 export const listCtrl = ({store, dispatch}) => ({
   is: 'incident-list',
-	properties: {
-  	incidents: Array,
-		isLoading: {
-			type: Boolean,
-			value: true,
-		},
-	},
+  properties: {
+    incidents: Array,
+    isLoading: {
+      type: Boolean,
+      value: true,
+    },
+  },
   updateState(state) {
-		this.isLoading = state.isLoading
-		this.incidents = strikesByCountry(state)
+    this.isLoading = state.isLoading
+    this.incidents = strikesByCountry(state)
     const list = this.$$("iron-list")
     list.notifyResize()
   },
   ready() {
-		// TODO fix this
-		this.incidents = [{}, {}, {}, {}]
+    // TODO fix this
+    this.incidents = [{}, {}, {}, {}]
 
-		setTimeout(() => {
-			store.onValue((state) => {
-				this.updateState(state)
-			})
-		}, 200)
+    setTimeout(() => {
+      store.onValue((state) => {
+        this.updateState(state)
+      })
+    }, 200)
   },
 })
