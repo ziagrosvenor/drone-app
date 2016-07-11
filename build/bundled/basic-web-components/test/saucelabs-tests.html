@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1,user-scalable=yes">
+  <title>Complete Test Suite - Basic Web Components</title>
+
+  <link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+
+  <script src="../node_modules/mocha/mocha.js" type="text/javascript"></script>
+  <script src="../node_modules/webcomponents.js/webcomponents.js"></script>
+
+  <script>mocha.setup("bdd");</script>
+
+  <script src="../build/tests.js"></script>
+
+</head>
+
+<body>
+  
+  <div id="mocha"></div>
+
+  
+  <div id="container"></div>
+
+  <script>function logFailure(e,t){var n=function(e){for(var t=[];e.parent.title;)t.push(e.parent.title),e=e.parent;return t.reverse()};failedTests.push({name:e.title,result:!1,message:t.message,stack:t.stack,titles:n(e)})}var runner=mocha.run(),failedTests=[];runner.on("end",function(){window.mochaResults=runner.stats,window.mochaResults.reports=failedTests}),runner.on("fail",logFailure);</script>
+
+
+
+
+</body></html>

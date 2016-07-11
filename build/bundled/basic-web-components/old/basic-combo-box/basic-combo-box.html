@@ -1,0 +1,33 @@
+<html><head><link rel="import" href="../basic-popup-source/basic-popup-source.html">
+<link rel="import" href="../basic-button/basic-button.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-combo-box">
+  <template>
+
+    <style>:host{box-sizing:border-box;display:-webkit-inline-flex;display:inline-flex;}#popupSource{display:-webkit-inline-flex;display:inline-flex;-webkit-flex:1;flex:1;-webkit-flex-direction:column;flex-direction:column;}#layoutContainer{align-items:stretch;display:-webkit-flex;display:flex;-webkit-flex:1;flex:1;}:host(.focused){outline:thin dotted;outline:5px auto -webkit-focus-ring-color;outline-offset:-2px;}#inputContainer{-webkit-flex:1;flex:1;}.comboBoxInput[type='text']{border:none;box-sizing:border-box;-webkit-flex:1;flex:1;font-family:inherit;font-size:inherit;outline:none;padding:2px;width:100%;}#buttonContainer{-webkit-align-items:stretch;align-items:stretch;display:-webkit-flex;display:flex;}:host([generic='']){border:1px solid lightgray;}#dropdownButton{--basic-button:{border:none;border-left:1px solid transparent;border-radius:0;outline:none;padding:0 0.25em;};}:host(:hover){--basic-button:{border-left-color:lightgray;};}</style>
+
+    <basic-popup-source id="popupSource" dont-open-on-click="">
+      <div id="layoutContainer">
+        <div id="inputContainer">
+          <content id="contentInput" select=".comboBoxInput">
+            <input id="defaultInput" class="comboBoxInput" type="text">
+          </content>
+        </div>
+        
+        <div id="buttonContainer">
+          <button is="basic-button" id="dropdownButton" class="quiet" on-click="open" tabindex="-1">
+            <span id="indicator">
+              <content select=".popupIndicator">▼</content>
+            </span>
+          </button>
+        </div>
+      </div>
+      <content id="contentPopup" select=".popup"></content>
+    </basic-popup-source>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.Generic],cancel:function(){this.$.popupSource.cancel()},close:function(){this.$.popupSource.close()},get inputElement(){return this._firstElementDistributedTo(this.$.contentInput)},is:"basic-combo-box",open:function(){if(this.generic){var t=this.$.popupSource.popup,e=this.offsetWidth;t.style.minWidth=e+"px"}this.$.popupSource.open(),this.root.activeElement!==this.inputElement&&this.inputElement.focus();var n=new CustomEvent("basic-combo-box-opened");this.dispatchEvent(n)},get opened(){return this.$.popupSource.opened},ready:function(){this.addEventListener("focus",function(t){this._focusin(t)}.bind(this),!0),this.addEventListener("blur",function(t){this._focusout(t)}.bind(this),!0),this.$.inputContainer.addEventListener("click",function(t){this.opened||this.open()}.bind(this)),this.addEventListener("keydown",function(t){this._keydown(t)}.bind(this)),this.addEventListener("iron-overlay-closed",function(t){this._popupClosed()}.bind(this)),this.addEventListener("mousedown",function(t){this.opened&&this._distributedInto(t.target,this.popupElement)&&t.preventDefault()}.bind(this),!0);var t=this.getAttribute("value");this.value!==t&&(this.value=t)},get popupElement(){return this._firstElementDistributedTo(this.$.contentPopup)},properties:{dontOpenOnFocus:{notify:!0,type:Boolean,value:!1},popupKeys:{type:Array,value:[]}},setSelectionRange:function(t,e){var n=this.inputElement;n&&n.setSelectionRange(t,e,"forward")},get value(){var t=this.inputElement;return t&&t.value},set value(t){var e=this.inputElement;if(e){e.value=t;var n=new CustomEvent("value-changed");this.dispatchEvent(n)}},_dispatchKeydownEventToPopup:function(t){var e=new KeyboardEvent("keydown",{key:t.key,code:t.code,ctrlKey:t.ctrlKey,shiftKey:t.shiftKey,altKey:t.altKey,metaKey:t.metaKey,repeat:t.repeat,isComposing:t.isComposing,charCode:t.charCode,which:t.which});delete e.keyCode,Object.defineProperty(e,"keyCode",{value:t.keyCode}),this.popupElement.dispatchEvent(e)},_distributedInto:function(t,e){if(e.contains(t))return!0;var n=Polymer.dom(t).getDestinationInsertionPoints();for(var i in n)if(e.contains(n[i]))return!0;return!1},_firstElementDistributedTo:function(t){for(var e=Polymer.dom(t).getDistributedNodes(),n=0,i=e.length;n<i;n++)if(e[n]instanceof HTMLElement)return e[n];return null},_focusin:function(t){this.classList.add("focused"),this.dontOpenOnFocus||this.opened||this.open()},_focusout:function(t){setTimeout(function(){this.classList.remove("focused"),this.opened&&this.cancel()}.bind(this))},_keydown:function(t){var e=!1;if(this.opened&&this.popupKeys.indexOf(t.keyCode)>=0)setTimeout(function(){this._dispatchKeydownEventToPopup(t)}.bind(this)),e=!0;else switch(t.keyCode){case 40:this.opened||(this.open(),e=!0)}e&&(t.preventDefault(),t.stopPropagation())},_openHook:null,_popupClosed:function(){this.root.activeElement&&this.setSelectionRange(0,this.value.length)}});</script>
+</body></html>

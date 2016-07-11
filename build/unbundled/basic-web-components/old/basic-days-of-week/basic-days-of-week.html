@@ -1,0 +1,21 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-days-of-week">
+  <template>
+
+    <style>:host{display:table-row;}.dayOfWeek{display:table-cell;width:14.285%;}:host([generic='']) .dayOfWeek{padding:4px;text-align:center;}</style>
+
+    <div class="dayOfWeek"></div>
+    <div class="dayOfWeek"></div>
+    <div class="dayOfWeek"></div>
+    <div class="dayOfWeek"></div>
+    <div class="dayOfWeek"></div>
+    <div class="dayOfWeek"></div>
+    <div class="dayOfWeek"></div>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.CalendarHelpers,Basic.Generic],is:"basic-days-of-week",properties:{culture:{value:null,observer:"_cultureChanged"},format:{value:"abbreviated",reflectToAttribute:!0,observer:"_formatChanged"}},ready:function(){this._refresh()},_cultureChanged:function(){this._refresh()},_formatChanged:function(){this._refresh()},_refresh:function(){if(this.format){var e=this.culture,t=this.daysOfWeek(e),r=t[this.format],s=this.firstDayOfWeek(e),a=Polymer.dom(this.root).querySelectorAll(".dayOfWeek");a.forEach(function(e,t){var a=(s+t)%7,i=0===a||6===a,o=r[this.dateWeekDays[a]];e.textContent=o,e.classList.toggle("weekend",i),e.classList.toggle("weekday",!i)}.bind(this))}}});</script>
+</body></html>

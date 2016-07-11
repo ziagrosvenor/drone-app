@@ -1,0 +1,34 @@
+<!DOCTYPE html><html><head>
+
+  <meta charset="utf-8">
+  <title>basic-seamless-iframe</title>
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="basic-seamless-iframe.html">
+
+  <style>body,
+  button,
+  input{font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-size:15px;}body{margin:0.5in;}#frame{border:1px dotted gray;}</style>
+
+  <script>window.addEventListener("WebComponentsReady",function(){var e=document.querySelector("#frame"),n=document.querySelector("#contentCopy");e.addEventListener("framedContentChanged",function(e){n.innerHTML=e.detail.trim()})});</script>
+
+</head>
+
+
+
+<body unresolved="">
+  <p>
+    The rectangle below is a separate, framed page:
+  </p>
+  <basic-seamless-iframe id="frame" src="framed.html"></basic-seamless-iframe>
+  <p>
+    An instance of &lt;basic-seamless-iframe&gt; here in the outer page is
+    communicating across the frame boundary with an instance of
+    &lt;basic-framed-content&gt; in the framed page.
+    This lets the outer page see that the content of the framed page is:
+    "<span id="contentCopy"></span>" This also lets the frame rectangle
+    automatically size itself to the content of the framed page.
+  </p>
+
+
+
+</body></html>

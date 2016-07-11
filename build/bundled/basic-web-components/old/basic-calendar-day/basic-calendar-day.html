@@ -1,0 +1,17 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-calendar-day">
+  <template>
+
+    <style>:host([generic='']){padding:4px;}:host([generic='']) #day{text-align:right;}:host([generic=''].today){color:darkred;font-weight:bold;}</style>
+
+    <content>
+      <div id="day"></div>
+    </content>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.CalendarHelpers,Basic.Generic],is:"basic-calendar-day",properties:{date:{type:Date,reflectToAttribute:!0,observer:"_dateChanged"}},ready:function(){this.date||"undefined"!=typeof this.today&&(this.date=this.today())},_dateChanged:function(){var t=this.date;this.$.day.textContent=t.getDate();var e=this.today(),a=t.getDay(),g=t.getDate(),o=this.offsetDateByDays(t,1),s=Math.round(t.getTime()-e.getTime())/this.MILLISECONDS_IN_DAY,i=0===a||6===a,d=this.classList;d.toggle("past",t<e),d.toggle("today",0==s),d.toggle("future",t>e),d.toggle("firstDayOfMonth",1===g),d.toggle("lastDayOfMonth",t.getMonth()!==o.getMonth()),d.toggle("firstWeek",g<=7),d.toggle("sunday",0===a),d.toggle("saturday",6===a),d.toggle("weekend",i),d.toggle("weekday",!i),d.toggle("alternateMonth",Math.abs(t.getMonth()-e.getMonth())%2===1)}});</script>
+</body></html>

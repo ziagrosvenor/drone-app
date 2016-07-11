@@ -1,0 +1,1 @@
+window.Basic=window.Basic||{},Basic.Generic={get generic(){return this._generic},set generic(e){"string"==typeof e&&(e="false"!==e),this._generic=e,e===!1?this.setAttribute("generic","false"):null==e?this.removeAttribute("generic"):this.setAttribute("generic","")},ready:function(){this.generic=this.getAttribute("generic")||!0}};

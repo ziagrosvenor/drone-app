@@ -1,0 +1,17 @@
+<html><head><link rel="import" href="../basic-aspect/basic-aspect.html">
+<link rel="import" href="../basic-stack/basic-stack.html">
+
+</head><body><dom-module id="basic-spread-fit">
+  <template>
+
+    <style>:host{display:inline-block;overflow:hidden;position:relative;}basic-stack{display:inline-block;}#stack ::content .item{-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}</style>
+
+    <basic-stack id="stack">
+      <content></content>
+    </basic-stack>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.Aspect],contribute:{itemAdded:function(t){t.classList.add("item")}},is:"basic-spread-fit",properties:{target:{value:"shadow"}},ready:function(){this.$.stack.addEventListener("basic-layout",function(t){this._layout(t.detail.width,t.detail.height)}.bind(this))},recalc:function(){this.$.stack.recalc()},_layout:function(t,i){var e=this.collective.items,s=e.length;this.style.width=s*t+"px",this.style.height=i+"px",e.forEach(function(i,e){var s=(e+.5)*t;i.style.left=s+"px",i.style.top="50%"})}});</script>
+</body></html>

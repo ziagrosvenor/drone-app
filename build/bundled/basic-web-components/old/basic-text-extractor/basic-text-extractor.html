@@ -1,0 +1,15 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-text-extractor">
+  <template>
+
+    <style>:host(:not(.show)){display:none;}</style>
+
+    <content id="content"></content>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.ContentChanged],contentChanged:function(){this.value=this.flattenTextContent.trim()},is:"basic-text-extractor",properties:{value:{notify:!0,type:String,value:void 0}}});</script>
+</body></html>

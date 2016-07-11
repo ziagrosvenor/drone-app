@@ -1,0 +1,14 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+
+</head><body><dom-module id="basic-seamless-iframe">
+  <template>
+
+    <style>:host{display:block;position:relative;}#iframe{border:none;display:block;height:100%;position:absolute;width:100%;}</style>
+
+    <iframe id="iframe" src="{{src}}" scrollbars="no"></iframe>
+
+  </template>
+</dom-module>
+
+<script>Polymer({is:"basic-seamless-iframe",properties:{autoSize:{observer:"_autoSizeChanged",type:Boolean,value:!0},src:{observer:"_srcChanged",type:String}},ready:function(){window.addEventListener("resize",function(){this.autoSize&&this.clientWidth!==this._clientWidth&&(this._postMessageToFrame("requestHeight"),this._clientWidth=this.clientWidth)}.bind(this)),this.$.iframe.addEventListener("load",function(){this.dispatchEvent(new CustomEvent("load"))}.bind(this)),window.addEventListener("message",function(e){if(e.origin===this._frameOrigin&&e.data&&e.data.source===this.$.iframe.src)switch(e.data&&e.data.message){case"framedContentResponse":this._framedContentChanged(e.data.detail);break;case"framedHeightResponse":this._framedHeightChanged(e.data.detail);break;case"framedWebComponentsReady":this._framedWebComponentsReady()}}.bind(this),!1)},reload:function(){this.$.iframe.src=this.src},setFramedContent:function(e){this._pendingContent=e,this._updateFramedContent()},_autoSizeChanged:function(){this.autoSize&&this._postMessageToFrame("requestHeight")},_clientWidth:null,_framedContentChanged:function(e){var t=new CustomEvent("framedContentChanged",{detail:e});this.dispatchEvent(t)},_framedHeightChanged:function(e){this.autoSize&&(this.style.minHeight=e+"px")},_framedWebComponentsReady:function(){this._frameReady=!0;var e=new CustomEvent("framedWebComponentsReady");this.dispatchEvent(e),this._updateFramedContent()},_frameReady:!1,_pendingContent:null,_srcChanged:function(){var e=document.createElement("a");e.href=this.src;var t=e.origin;if(void 0==t){var n=/(.*\/\/[^\/]+)\//,i=n.exec(e.href);i&&(t=i[1])}this._frameOrigin=t},_updateFramedContent:function(){this._frameReady&&null!=this._pendingContent&&(this._postMessageToFrame("setContent",this._pendingContent),this._pendingContent=null)},_postMessageToFrame:function(e,t){if(this._frameOrigin){var n={message:e};null!=t&&(n.detail=t),this.$.iframe.contentWindow.postMessage(n,this._frameOrigin)}}});</script>
+</body></html>

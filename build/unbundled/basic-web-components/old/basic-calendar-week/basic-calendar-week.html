@@ -1,0 +1,22 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-calendar-day/basic-calendar-day.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-calendar-week">
+  <template>
+
+    <style>:host{display:table-row;}:host > :not(style){display:table-cell;width:14.285%;}</style>
+
+    <basic-calendar-day class="day firstDayOfWeek"></basic-calendar-day>
+    <basic-calendar-day class="day"></basic-calendar-day>
+    <basic-calendar-day class="day"></basic-calendar-day>
+    <basic-calendar-day class="day"></basic-calendar-day>
+    <basic-calendar-day class="day"></basic-calendar-day>
+    <basic-calendar-day class="day"></basic-calendar-day>
+    <basic-calendar-day class="day lastDayOfWeek"></basic-calendar-day>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.CalendarHelpers],is:"basic-calendar-week",dayElementForDate:function(t){var e=this.midnightOnDate(t);if(e>=this.firstDate&&e<=this.lastDate){var a=this.daysSinceFirstDayOfWeek(t,this.culture);return this.days[a]}return null},get days(){return Polymer.dom(this.root).querySelectorAll(":not(style)")},get firstDate(){return this.midnightOnDate(this.days[0].date)},get lastDate(){return this.midnightOnDate(this.days[6].date)},properties:{culture:{value:null,observer:"_cultureChanged"},dayElement:{type:String,value:"basic-calendar-day",reflectToAttribute:!0,observer:"_dayElementChanged"},date:{type:Date,value:null,observer:"_dateChanged"}},ready:function(){this.date||"undefined"==typeof this.today||(this.date=this.today())},_cultureChanged:function(){this._refresh()},_dateChanged:function(){this._refresh()},_dayElementChanged:function(){var t=document.createElement(this.dayElement),e=Polymer.dom(this.root);this.days.forEach(function(a,s){var i=t.cloneNode();i.classList.add("day"),i.classList.toggle("firstDayOfWeek",0===s),i.classList.toggle("lastDayOfWeek",6===s),e.replaceChild(i,a)}.bind(this)),this._refresh()},_refresh:function(){if(this.date){var t=this.date,e=t.getFullYear(),a=t.getMonth(),s=this.firstDateOfWeek(t,this.culture);this.days.forEach(function(t,i){var n=this.offsetDateByDays(s,i);t.date=n;var r=n.getFullYear()===e&&n.getMonth()===a;t.classList.toggle("insideMonth",r),t.classList.toggle("outsideMonth",!r)}.bind(this))}}});</script>
+</body></html>

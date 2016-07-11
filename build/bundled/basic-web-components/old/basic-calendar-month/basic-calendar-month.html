@@ -1,0 +1,22 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+<link rel="import" href="../basic-month-and-year/basic-month-and-year.html">
+<link rel="import" href="../basic-days-of-week/basic-days-of-week.html">
+<link rel="import" href="../basic-calendar-month-days/basic-calendar-month-days.html">
+
+</head><body><dom-module id="basic-calendar-month">
+  <template>
+
+    <style>:host{display:inline-block;}#monthAndYear{display:block;}#monthTable{border-collapse:collapse;display:table;width:100%;}#daysOfWeek{display:table-header-group;}:host([generic='']) #monthAndYear{font-weight:bold;padding:4px;text-align:center;}:host([generic='']) #daysOfWeek{font-size:smaller;}:host([generic='']) .dayOfWeek{padding:4px;}</style>
+
+    <basic-month-and-year id="monthAndYear"></basic-month-and-year>
+    <div id="monthTable">
+      <basic-days-of-week id="daysOfWeek" format="{{daysOfWeekFormat}}"></basic-days-of-week>
+      <basic-calendar-month-days id="calendar" day-element="{{dayElement}}"></basic-calendar-month-days>
+    </div>
+
+  </template>
+</dom-module>
+
+<script>Polymer({is:"basic-calendar-month",behaviors:[Basic.CalendarHelpers,Basic.Generic],dayElementForDate:function(e){return this.$.calendar.dayElementForDate(e)},get days(){return this.$.calendar.days},get firstDateOfMonth(){return this.$.calendar.firstDateOfMonth},isDateInMonth:function(e){return this.$.calendar.isDateInMonth(e)},get lastDateOfMonth(){return this.$.calendar.lastDateOfMonth},properties:{culture:{value:null,observer:"_cultureChanged"},date:{type:Date,value:null,observer:"_dateChanged"},dayElement:{type:String},daysOfWeekFormat:{value:"abbreviated",reflectToAttribute:!0}},ready:function(){this.date||(this.date=new Date)},weekElementForDate:function(e){return this.$.calendar.weekElementForDate(e)},get weeks(){return this.$.calendar.weeks},_cultureChanged:function(){var e=this.culture;e&&(this.$.monthAndYear.culture=e,this.$.daysOfWeek.culture=e,this.$.calendar.culture=e)},_dateChanged:function(){var e=this.date;this.$.monthAndYear.date=e,this.$.calendar.date=e}});</script>
+</body></html>

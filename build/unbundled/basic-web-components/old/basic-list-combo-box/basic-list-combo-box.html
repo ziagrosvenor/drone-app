@@ -1,0 +1,20 @@
+<html><head><link rel="import" href="../basic-combo-box/basic-combo-box.html">
+<link rel="import" href="../basic-list-box/basic-list-box.html">
+<link rel="import" href="basic-item-text-search.html">
+
+</head><body><dom-module id="basic-list-combo-box">
+  <template>
+
+    <style>:host{display:-webkit-inline-flex;display:inline-flex;}#comboBox{-webkit-flex:1;flex:1;}#listBox{--basic-list-box:{border:none;height:300px;};}</style>
+
+    <basic-combo-box id="comboBox" dont-open-on-focus="{{dontOpenOnFocus}}">
+      <basic-list-box id="listBox" class="popup" selected-item="{{selectedItem}}" tabindex="-1">
+        <content></content>
+      </basic-list-box>
+    </basic-combo-box>
+
+  </template>
+</dom-module>
+
+<script>Polymer({autoComplete:function(){var e=this.value,t=this.$.listBox.collective.findItemWithTextPrefix(e);if(t){this._updateTextWhenSelectedItemChanges=!1,this.$.listBox.selectedItem=t;var o=t.textContent;this.value!==o&&(this.value=o),this.$.comboBox.setSelectionRange(e.length,o.length),this._updateTextWhenSelectedItemChanges=!0}else this.$.listBox.selectedItem=null},cancel:function(){this.$.comboBox.cancel()},close:function(){this.$.comboBox.close()},is:"basic-list-combo-box",get inputElement(){return this.$.comboBox.inputElement},get items(){return this.$.listBox.items},open:function(){this.$.comboBox.open()},get opened(){return this.$.comboBox.opened},ready:function(){var e=Basic.ItemTextSearch,t={};for(var o in e)t[o]=e[o];this.$.listBox.assimilate(t),this.addEventListener("keydown",function(e){return this._keydown(e)}.bind(this)),this.$.listBox.addEventListener("click",function(e){this.opened&&this.close()}.bind(this)),this.$.comboBox.addEventListener("basic-combo-box-opened",function(e){this._opened()}.bind(this)),this.$.comboBox.popupKeys=[33,34,35,36,38,40];var i=this.getAttribute("value");this.value!==i&&(this.value=i)},get popupElement(){return this.$.comboBox.popupElement},properties:{dontOpenOnFocus:{notify:!0,type:Boolean,value:!1},selectedItem:{notify:!0,observer:"_selectedItemChanged",type:Object}},get value(){return this.$.comboBox.value},set value(e){this.$.comboBox.value=e;var t=new CustomEvent("value-changed");this.dispatchEvent(t)},_keydown:function(e){var t=!1;13===e.keyCode?this.opened&&(this.close(),t=!0):(32===e.keyCode||e.keyCode>=48)&&!(e.altKey||e.ctrlKey||e.metaKey)?setTimeout(function(){this.autoComplete()}.bind(this)):8!==e.keyCode&&46!==e.keyCode||setTimeout(function(){this._selectExactMatch()}.bind(this)),t&&(e.preventDefault(),e.stopPropagation())},_opened:function(){setTimeout(function(){this.$.listBox.value=this.value,this.$.listBox.scrollSelectedItemIntoView()}.bind(this))},_selectedItemChanged:function(){if(this._updateTextWhenSelectedItemChanges){var e=this.selectedItem,t=this.inputElement;if(e&&t){var o=e instanceof HTMLElement?e.textContent:e;t.value=o,this.$.comboBox.setSelectionRange(0,o.length)}}},_selectExactMatch:function(){var e=this.value,t=this.$.listBox.collective.findItemWithText(e);this._updateTextWhenSelectedItemChanges=!1,this.$.listBox.selectedItem=t,this._updateTextWhenSelectedItemChanges=!0},_updateTextWhenSelectedItemChanges:!0});</script>
+</body></html>

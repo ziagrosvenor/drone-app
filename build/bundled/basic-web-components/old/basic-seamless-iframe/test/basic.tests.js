@@ -1,0 +1,1 @@
+suite("basic",function(){this.timeout(2e3);var e=document.getElementById("container");teardown(function(){e.innerHTML=""}),test.skip("receives content from framed page",function(n){var t=document.createElement("basic-seamless-iframe");e.appendChild(t),flush(function(){n()})})});

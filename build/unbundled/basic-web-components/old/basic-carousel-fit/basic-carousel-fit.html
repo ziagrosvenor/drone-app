@@ -1,0 +1,34 @@
+<html><head><link rel="import" href="../basic-aspect/basic-aspect.html">
+<link rel="import" href="../basic-keyboard/basic-keyboard.html">
+<link rel="import" href="../basic-keyboard-direction/basic-keyboard-direction.html">
+<link rel="import" href="../basic-trackpad-direction/basic-trackpad-direction.html">
+<link rel="import" href="../basic-swipe-direction/basic-swipe-direction.html">
+<link rel="import" href="../basic-direction-selection/basic-direction-selection.html">
+<link rel="import" href="../basic-item-selection/basic-item-selection.html">
+<link rel="import" href="../basic-accessible-list/basic-accessible-list.html">
+<link rel="import" href="../basic-content-items/basic-content-items.html">
+<link rel="import" href="../basic-children-content/basic-children-content.html">
+<link rel="import" href="../basic-sliding-viewport-fit/basic-sliding-viewport-fit.html">
+<link rel="import" href="../basic-spread-fit/basic-spread-fit.html">
+
+</head><body><dom-module id="basic-carousel-fit">
+  <template>
+
+    <style>:host{display:inline-block;}[target="child"]{display:-webkit-flex;display:flex;-webkit-flex:1;flex:1;}basic-spread-fit{height:100%;}</style>
+
+    <basic-item-selection selection-required="true"></basic-item-selection>
+    <basic-trackpad-direction target="child">
+      <basic-swipe-direction target="child">
+        <basic-sliding-viewport-fit id="viewport" target="child">
+          <basic-spread-fit id="spread" role="presentation">
+            <content id="content"></content>
+          </basic-spread-fit>
+        </basic-sliding-viewport-fit>
+      </basic-swipe-direction>
+    </basic-trackpad-direction>
+
+  </template>
+</dom-module>
+
+<script>Polymer({aspects:[Basic.AccessibleList,Basic.ContentItems,Basic.DirectionSelection,Basic.Keyboard,Basic.KeyboardDirection],behaviors:[Basic.Aspect],indexOfItem:function(e){return this.collective.indexOfItem(e)},is:"basic-carousel-fit",get items(){return this.collective.items},properties:{selectedIndex:{type:Number},selectedItem:{type:Object},target:{value:"shadow"}},ready:function(){this.$.spread.addEventListener("basic-layout",function(e){var t=this.$.viewport;t.style.width=e.detail.width+"px",t.style.height=e.detail.height+"px"}.bind(this))},get selectedIndex(){if(this._readied)return this.collective.selectedIndex},set selectedIndex(e){this.collective.selectedIndex=e},get selectedItem(){return this.collective.selectedItem},set selectedItem(e){this.collective.selectedItem=e},selectFirst:function(){return this.collective.selectFirst()},selectLast:function(){return this.collective.selectLast()},selectNext:function(){return this.collective.selectNext()},selectPrevious:function(){return this.collective.selectPrevious()}});</script>
+</body></html>

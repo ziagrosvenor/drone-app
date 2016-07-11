@@ -1,0 +1,10 @@
+<html><head><link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared.html">
+
+</head><body><dom-module id="resize-test-element">
+<template>
+  <style>:host{display:block;}</style>
+</template>
+</dom-module>
+<script>Polymer({behaviors:[Basic.Resized],is:"resize-test-element",resized:function(){this.resizeCallCount++,this.resizeCallHook&&this.resizeCallHook()},resizeCallCount:0});</script>
+</body></html>

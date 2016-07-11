@@ -1,0 +1,1 @@
+suite("basic",function(){this.timeout(2e3);var t=document.getElementById("container");test("instantiation",function(e){var n=document.createElement("basic-carousel-fit");t.appendChild(n),flush(function(){assert(n),e()})})});

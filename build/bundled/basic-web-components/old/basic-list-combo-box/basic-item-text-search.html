@@ -1,0 +1,4 @@
+<html><head><link rel="import" href="../basic-aspect/basic-aspect.html">
+
+<script>window.Basic=window.Basic||{},window.Basic.ItemTextSearch={contribute:{findItemWithText:function(t){var e=this.collective.itemTextContents,i=t.toLowerCase(),n=e.indexOf(i);return n>=0?this.collective.items[n]:null},findItemWithTextPrefix:function(t){for(var e=this.collective.itemTextContents,i=t.length,n=t.toLowerCase(),o=0;o<e.length;o++){var s=e[o];if(s.substr(0,i)===n)return this.collective.items[o]}return null},itemsChanged:function(){this._itemTextContents=null},get itemTextContents(){if(!this._itemTextContents){var t=this.collective.items;this._itemTextContents=t.map(function(t){var e=t.textContent||t.alt;return e.toLowerCase()})}return this._itemTextContents}},name:"basic-item-text-search",_itemTextContents:null};</script>
+</head><body></body></html>

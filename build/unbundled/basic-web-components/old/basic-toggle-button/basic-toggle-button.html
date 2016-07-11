@@ -1,0 +1,18 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+<link rel="import" href="../basic-button/basic-button-styles.html">
+
+</head><body><dom-module id="basic-toggle-button">
+  <template>
+
+    <style include="basic-button-styles"></style>
+
+    <style>:host([generic=''][active]){color:#333;background:#d4d4d4;border-color:#adadad;-webkit-box-shadow:inset 0 3px 5px rgba(0, 0, 0, .125);box-shadow:inset 0 3px 5px rgba(0, 0, 0, .125);}:host([generic=''][active]:active){background:#c2c2c2;border-color:#8c8c8c;}</style>
+
+    <content></content>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.Generic],extends:"button",is:"basic-toggle-button",listeners:{click:"_click",keydown:"_keydown"},properties:{active:{type:Boolean,notify:!0,reflectToAttribute:!0}},toggle:function(){this.active=!this.active,this.setAttribute("aria-pressed",this.active)},_click:function(){this.toggle()},_keydown:function(t){var e=!1;switch(t.keyCode){case 32:this.toggle(),e=!0}return e&&(t.preventDefault(),t.stopPropagation()),e}});</script>
+</body></html>

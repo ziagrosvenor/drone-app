@@ -1,0 +1,18 @@
+<html><head><link rel="import" href="../basic-aspect/basic-aspect.html">
+<link rel="import" href="../basic-children-content/basic-children-content.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-stack">
+  <template>
+
+    <style>:host{box-sizing:border-box;display:inline-block;position:relative;}#stackContainer{display:block;left:0;position:relative;top:0;width:100%;}#stackContainer ::content > *{position:absolute;}</style>
+
+    <basic-children-content id="stackContainer">
+      <content id="content"></content>
+    </basic-children-content>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.Aspect,Basic.Resized],contribute:{contentChanged:function(){this._listenForLoadEvents("img"),this._listenForLoadEvents("iframe"),setTimeout(function(){this.recalc()}.bind(this))}},is:"basic-stack",properties:{target:{value:"shadow"}},recalc:function(){var t=this.collective.content;if(t){var i=0,e=0;Array.prototype.forEach.call(t,function(t){var n=t.getBoundingClientRect();i=Math.max(i,n.width),e=Math.max(e,n.height)}),i=Math.ceil(i);var n=i?i+"px":null,a=e?e+"px":null;this.$.stackContainer.style.width=n,this.$.stackContainer.style.height=a;var s=new CustomEvent("basic-layout",{bubbles:!0,detail:{count:t.length,height:parseInt(a),width:parseInt(n)}});this.dispatchEvent(s)}},resized:function(t){if(this.$&&this.$.stackContainer){this.$.stackContainer.style;this.$.stackContainer.style.width="100%",this.recalc()}},_listenForLoadEvents:function(t){var i=Basic.ContentHelpers.flattenChildNodes(this);Array.prototype.forEach.call(i,function(i){i.localName===t&&i.addEventListener("load",function(){this.recalc()}.bind(this))}.bind(this))}});</script>
+</body></html>

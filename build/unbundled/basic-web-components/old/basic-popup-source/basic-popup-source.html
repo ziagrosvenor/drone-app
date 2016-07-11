@@ -1,0 +1,20 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-popup/basic-popup.html">
+
+</head><body><dom-module id="basic-popup-source">
+  <template>
+
+    <style>#sourceContainer{display:inline-block;}</style>
+
+    <div id="sourceContainer" on-click="_sourceClick">
+      <content select=":not(.popup)"></content>
+    </div>
+    <basic-popup id="popup" no-auto-focus="" with-backdrop="">
+      <content select=".popup"></content>
+    </basic-popup>
+
+  </template>
+</dom-module>
+
+<script>Polymer({cancel:function(){this.$.popup.cancel()},close:function(){this.$.popup.close()},is:"basic-popup-source",properties:{dontOpenOnClick:{type:Boolean}},open:function(){this.$.popup.open()},get opened(){return this.$.popup.opened},get popup(){return this.$.popup},ready:function(){this.$.popup.fitInto=this.$.sourceContainer},toggle:function(){this.$.popup.toggle()},_sourceClick:function(){this.dontOpenOnClick||this.open()}});</script>
+</body></html>

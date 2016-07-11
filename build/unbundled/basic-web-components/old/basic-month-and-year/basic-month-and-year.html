@@ -1,0 +1,17 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+<link rel="import" href="../basic-month-name/basic-month-name.html">
+
+</head><body><dom-module id="basic-month-and-year">
+  <template>
+
+    <style>:host(.rtl){direction:rtl;}</style>
+
+    <basic-month-name id="monthName"></basic-month-name>
+    <span id="year"></span>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.CalendarHelpers,Basic.Generic],is:"basic-month-and-year",properties:{culture:{value:null,observer:"_cultureChanged"},date:{type:Date,value:null,reflectToAttribute:!0,observer:"_dateChanged"}},ready:function(){this.date||(this.date=new Date)},_cultureChanged:function(){if(this.date){this.$.monthName.culture=this.culture;var e=this.isRTL(culture);this.classList.toggle("rtl",e)}},_dateChanged:function(){if(this.date){var e=this.date;this.$.monthName.month=e.getMonth(),this.$.year.textContent=e.getFullYear()}}});</script>
+</body></html>

@@ -1,0 +1,15 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-framed-content">
+  <template>
+
+    <style>:host{display:block;}</style>
+
+    <content></content>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.ContentChanged],broadcastContent:function(){var t=Polymer.dom(this).innerHTML;this._postMessageToParent("framedContentResponse",t)},broadcastHeight:function(){this._lastHeight=this._getHeight(),this._postMessageToParent("framedHeightResponse",this._lastHeight)},contentChanged:function(){this.broadcastContent(),this._listenForLoadEvents("img"),this._listenForLoadEvents("iframe"),window.setTimeout(function(){this._checkForHeightChange()}.bind(this),1)},is:"basic-framed-content",ready:function(){window.addEventListener("WebComponentsReady",function(){this._postMessageToParent("framedPolymerReady"),this._postMessageToParent("framedWebComponentsReady")}.bind(this)),window.addEventListener("message",function(t){if(t.data)switch(t.data.message){case"setContent":this.innerHTML=t.data.detail;var e=Polymer.dom(this).querySelectorAll("link");Array.prototype.forEach.call(e,function(t){document.head.appendChild(t)});break;case"requestContent":this.broadcastContent();break;case"requestHeight":this.broadcastHeight()}}.bind(this))},_checkForHeightChange:function(){this._lastHeight!==this._getHeight()&&this.broadcastHeight()},_getHeight:function(){return Math.ceil(this.offsetHeight)},_lastHeight:null,_listenForLoadEvents:function(t){var e=Basic.ContentHelpers.flattenChildNodes(this);Array.prototype.forEach.call(e,function(e){e.localName===t&&e.addEventListener("load",function(){this.recalc()}.bind(this))}.bind(this))},_postMessageToParent:function(t,e){var n={message:t,source:location.href};null!=e&&(n.detail=e),window.parent.postMessage(n,"*")}});</script>
+</body></html>

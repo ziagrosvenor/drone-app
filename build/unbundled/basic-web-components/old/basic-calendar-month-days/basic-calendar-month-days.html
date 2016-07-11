@@ -1,0 +1,21 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+<link rel="import" href="../basic-calendar-day/basic-calendar-day.html">
+<link rel="import" href="../basic-calendar-week/basic-calendar-week.html">
+
+</head><body><dom-module id="basic-calendar-month-days">
+  <template>
+
+    <style>:host{display:table-row-group;}basic-calendar-week.outsideMonth{display:none;}basic-calendar-week::shadow .day.outsideMonth{visibility:hidden;}</style>
+
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.CalendarHelpers],get days(){var t=[];return this.weeks.forEach(function(e){t=t.concat(e.days)}),t},dayElementForDate:function(t){var e=this.weekElementForDate(t);return e&&e.dayElementForDate(t)},get firstDateOfMonth(){var t=this.midnightOnDate(this.date);return t.setDate(1),t},is:"basic-calendar-month-days",isDateInMonth:function(t){var e=this.offsetDateByDays(this.lastDateOfMonth,1);return t>=this.firstDateOfMonth&&t<e},get lastDateOfMonth(){var t=this.firstDateOfMonth;return t.setMonth(t.getMonth()+1),t.setDate(t.getDate()-1),t},properties:{culture:{value:null,observer:"_cultureChanged"},date:{type:Date,value:null,observer:"_dateChanged"},dayElement:{type:String}},ready:function(){this.date||"undefined"==typeof this.today||(this.date=this.today())},weekElementForDate:function(t){if(this.isDateInMonth(t)){var e=this.daysSinceFirstDayOfWeek(this.firstDateOfMonth,this.culture);return weekIndex=Math.floor((t.getDate()+e-1)/7),this.weeks[weekIndex]}return null},get weeks(){return Polymer.dom(this.root).querySelectorAll("basic-calendar-week")},_cultureChanged:function(){var t=this.culture;this.weeks.forEach(function(e){e.culture=t}),this._refresh()},_dateChanged:function(){this._refresh()},_refresh:function(){if(this.date){var t=this.firstDateOfMonth,e=t.getMonth();this.weeks.forEach(function(n,a){var s=this.offsetDateByDays(t,7*a),r=this.firstDateOfWeek(s,this.culture);n.date=0==a?s:this.firstDateOfWeek(s,this.culture);var i=this.offsetDateByDays(r,6),o=r.getMonth()===e||i.getMonth()===e;n.classList.toggle("outsideMonth",!o)}.bind(this))}}});</script></body></html>

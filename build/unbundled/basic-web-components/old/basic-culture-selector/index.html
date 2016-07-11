@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>basic-culture-selector</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../basic-framed-content/basic-framed-content.html">
+  <link rel="import" href="basic-culture-selector.html">
+
+  <style>body,
+  button,
+  input{font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;font-size:15px;}body{margin:0;}basic-framed-content{padding:2em;}</style>
+
+  <script>function handle_cultureChanged(e,t){var l=t.cldr.locale,u=Globalize(l).numberFormatter(),a=Globalize(l).dateFormatter();document.querySelector("template").model={cultureName:e.name,dateExample:a(new Date),numberExample:u(1234567.89)}}window.addEventListener("WebComponentsReady",function(){document.querySelector("template").model={};var e=document.querySelector("basic-culture-selector");e.addEventListener("culture-changed",function(t){handle_cultureChanged(e,e.culture)}),e.culture&&handle_cultureChanged(e,e.culture)});</script>
+
+</head>
+
+<body unresolved="">
+<basic-framed-content>
+  <p>
+    <basic-culture-selector>Pick your preferred language/location settings:</basic-culture-selector>
+  </p>
+  <template is="dom-bind">
+    <div>Culture name: <span>{{model.cultureName}}</span></div>
+    <div>Today's date: <span>{{model.dateExample}}</span></div>
+    <div>Number example: <span>{{model.numberExample}}</span></div>
+  </template>
+</basic-framed-content>
+
+
+
+</body></html>

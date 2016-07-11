@@ -1,0 +1,36 @@
+<html><head><link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/google-chart/google-chart.html">
+<link rel="import" href="../../../bower_components/app-layout/app-box/app-box.html">
+
+</head><body><dom-module id="drone-stats">
+  <template>
+    <style>:host{display:block;}.box-chart{width:100%;}.bg-main{background-color:#677077;}.bg-second{background-color:#f2b632;}#deadly-location{height:300px;display:flex;align-items:center;justify-content:center;}.box-heading{font-weight:200;font-size:1.2rem;color:white;width:80%;text-align:center;}.drone-stream{color:#b5b5b7;}</style>
+	<app-box>
+		<div id="deadly-location" class="bg-main">
+			<div class="box-heading">In [[deadlyArea.location]], [[deadlyArea.deaths]] people have been killed since <span class="drone-stream">Dronestre.am</span> started gathering data.</div></div>
+	</app-box>
+	<app-box>
+		<google-chart class="box-chart" type="area" cols="[[cols]]" rows="[[rows]]">
+		</google-chart>
+	</app-box>
+	<app-box>
+		<div id="deadly-location" class="bg-second">
+			<div class="box-heading">
+				In total there have been [[totalDeaths]] recorded deaths and [[totalInjuries]] recorded injuries.</div>
+			</div>
+		
+	</app-box>
+	<app-box>
+		<google-chart type="bubble" class="box-chart" cols="[[bubbleCols]]" rows="[[bubbleRows]]">
+		</google-chart>
+	</app-box>
+	<app-box>
+		<div id="deadly-location" class="bg-main">
+			<div class="box-heading">[[totalCivilDeaths]] innocent civilians have lost their lives at the hands of unmanned U.S drones</div>
+		</div>
+	</app-box>
+</template>
+
+  <script>Polymer(window.statsCtrl);</script>
+</dom-module>
+</body></html>

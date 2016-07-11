@@ -1,0 +1,15 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-month-name">
+  <style>:host{display:inline-block;}</style>
+
+  <template>
+    <span id="name"></span>
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.CalendarHelpers],is:"basic-month-name",properties:{culture:{value:null,observer:"_cultureChanged"},month:{value:null,type:Number,reflectToAttribute:!0,observer:"_monthChanged"}},ready:function(){this.month||(this.month=(new Date).getMonth())},_cultureChanged:function(){this._monthChanged()},_monthChanged:function(){culture=this.culture,monthNameEnum=this.monthsOfYear(culture),monthName=monthNameEnum.wide[this.month+1],this.$.name.textContent=monthName}});</script>
+
+
+</body></html>

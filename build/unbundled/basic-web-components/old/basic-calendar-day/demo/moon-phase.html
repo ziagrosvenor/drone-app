@@ -1,0 +1,12 @@
+<html><head><link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+</head><body><dom-module id="moon-phase">
+  <style>:host{display:block;position:relative;}#phaseIcon{height:100%;width:100%;}</style>
+
+  <template>
+    <img id="phaseIcon">
+  </template>
+</dom-module>
+
+<script>Polymer({is:"moon-phase",moonAngle:function(t){var e=this._jd0(t.getFullYear(),t.getMonth()+1,t.getDate()),n=(e-2451545)/36525,s=n*n,i=s*n,o=i*n,r=297.8501921+445267.1114034*n-.0018819*s+i/545868-o/113065e3,a=357.5291092+35999.0502909*n-1536e-7*s+i/2449e4,h=134.9633964+477198.8675055*n+.0087414*s+i/69699-o/14712e3,d=180-r-6.289*this._sind(h)+2.1*this._sind(a)-1.274*this._sind(2*r-h)-.658*this._sind(2*r)-.214*this._sind(2*h)-.11*this._sind(r);return this._rev(d)},properties:{date:{type:Date,reflectToAttribute:!0,observer:"_dateChanged"}},ready:function(){this.date||"undefined"!=typeof this.today&&(this.date=this.today())},_dateChanged:function(){var t=this.date,e=this.moonAngle(t),n=new Date(t.getTime());n.setDate(n.getDate()+1);var s,i=this.moonAngle(n);s=e>=0&&i>e?"full":e>=90&&i<90?"firstQuarter":e>=180&&i<180?"new":e>=270&&i<270?"lastQuarter":"";var o=s.length>0;this.$.phaseIcon.style.display=o?"block":"none",o?this.$.phaseIcon.src=this.resolveUrl("icons/"+s+".svg"):this.$.phaseIcon.src=""},_jd0:function(t,e,n){var s=t,i=e;i<3&&(i+=12,s-=1);var o=Math.floor(s/100),r=2-o+Math.floor(o/4),a=Math.floor(365.25*(s+4716))+Math.floor(30.6001*(i+1))+n+r-1524.5;return a},_rev:function(t){return t-360*Math.floor(t/360)},_sind:function(t){return Math.sin(t*Math.PI/180)}});</script>
+</body></html>

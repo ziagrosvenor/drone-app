@@ -1,0 +1,12 @@
+<html><head><link rel="import" href="../../bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
+
+</head><body><dom-module id="basic-popup">
+  <template>
+    <style>:host{position:fixed;z-index:1;}:host([generic='']){background:white;border:1px solid rgba(0, 0, 0, 0.2);box-shadow:0 2px 4px rgba( 0, 0, 0, 0.2 );box-sizing:border-box;padding:.25em;-moz-user-select:none;-ms-user-select:none;-webkit-user-select:none;user-select:none;}</style>
+    <content></content>
+  </template>
+</dom-module>
+
+<script>Polymer({behaviors:[Basic.Generic,Polymer.IronOverlayBehavior],fit:function(){this.positionAdjacentTo(this.fitInto)},is:"basic-popup",positionAdjacentTo:function(t){var i=t.getBoundingClientRect(),o=this.style,s=parseInt(o.marginTop)||0,e=parseInt(o.marginBottom)||0,n=parseInt(o.marginLeft)||0,p=parseInt(o.marginRight)||0,l=s+this.offsetHeight+e,r=n+this.offsetWidth+p,a=document.body.scrollTop,g=document.body.scrollLeft,h=window.innerHeight,c=window.innerWidth,f=i.bottom+l<=h+a,d=i.top-l>=a,m=f||!d,u=m?i.bottom:i.top-l,y=i.left+r<=c+g,b=i.right-r>=g,A=y||!b,L=A?i.left:i.right-r;this.classList.toggle("popupAppearsAbove",!m),this.classList.toggle("popupAppearsBelow",m),this.classList.toggle("popupAlignLeft",A),this.classList.toggle("popupAlignRight",!A),this.style.top=u+"px",this.style.left=L+"px"}});</script>
+</body></html>

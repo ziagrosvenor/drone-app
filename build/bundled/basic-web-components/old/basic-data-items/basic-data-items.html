@@ -1,0 +1,4 @@
+<html><head><link rel="import" href="../basic-aspect/basic-aspect.html">
+
+<script>Polymer({behaviors:[Basic.Aspect],contribute:{applySelection:function(e,t){},collectiveChanged:function(){this.collective.itemsChanged()},indexOfItem:function(e){return this.data.indexOf(e)},get items(){return this.data},itemsChanged:Basic.Collective.defaultMethod},dataChanged:function(){this.collective.itemsChanged()},is:"basic-data-items",get items(){return this.collective.items},properties:{data:{value:null,observer:"dataChanged"}}});</script>
+</head><body></body></html>
