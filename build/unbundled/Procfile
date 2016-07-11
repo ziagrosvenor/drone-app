@@ -1,1 +1,1 @@
-web: npm i && node ./build/bundled/server.js
+web: node ./build/bundled/server.js
