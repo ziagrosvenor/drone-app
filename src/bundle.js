@@ -21310,7 +21310,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var router = (0, _router.routerFactory)(_store2.default, {
   map: _map.mapRouteSpec,
-  list: _list.listRouteSpec
+  list: _list.listRouteSpec,
+  stats: _stats.statsRouteSpec
 });
 
 window.appCtrl = (0, _controller.appCtrl)(router, _store2.default);
@@ -21620,7 +21621,7 @@ var strikesByCountry = exports.strikesByCountry = function strikesByCountry(stat
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.statsCtrl = undefined;
+exports.statsCtrl = exports.statsRouteSpec = undefined;
 
 var _ramda = require("ramda");
 
@@ -21630,39 +21631,34 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var chartCols = [{ label: "Location", type: "string" }, { label: "Lives lost", type: "number" }];
 
-var bubbleChartCols = [{ label: "Location", type: "string" }, { label: "Civilians", type: "number" }, { label: "Injuries", type: "number" }, { label: "Country", type: "string" }, { label: "Deaths_max", type: "number" }];
+var bubbleChartCols = [{ label: "Location", type: "string" }, { label: "Civilians", type: "number" }, { label: "Injuries", type: "number" }, { label: "Country", type: "string" }, { label: "Deaths", type: "number" }];
 
 var bubbleChartLabels = _ramda2.default.map(_ramda2.default.compose(_ramda2.default.toLower, _ramda2.default.path(["label"])))(bubbleChartCols);
 
 var sumDeathsForLocations = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.values, _ramda2.default.reduce(function (accObj, dat) {
+  if (!dat.location) return accObj;
+
   var location = accObj[dat.location];
 
   accObj[dat.location] = location ? _ramda2.default.merge(location, { deaths: location.deaths + dat.deaths }) : dat;
 
   return accObj;
 }, {}), _ramda2.default.map(function (dat) {
-  dat.deaths = parseInt(dat.deaths);
+  dat.deaths = dat.deaths;
   return dat;
 }), _ramda2.default.map(_ramda2.default.pick(["location", "deaths"]))));
 
-var numberRegex = /[0-9]{1,6}/;
-var convertStrToNum = _ramda2.default.memoize(function (c) {
-  return numberRegex.test(c) ? parseInt(c) : 0;
-});
-
-var pickBubbleChartData = _ramda2.default.memoize(_ramda2.default.map(_ramda2.default.compose(_ramda2.default.evolve({
-  civilians: convertStrToNum,
-  injuries: convertStrToNum,
-  deaths_max: convertStrToNum
-}), _ramda2.default.pick(bubbleChartLabels))));
+var pickBubbleChartData = _ramda2.default.memoize(_ramda2.default.map(_ramda2.default.pick(bubbleChartLabels)));
 
 var pickBubbleChartValues = _ramda2.default.compose(_ramda2.default.map(_ramda2.default.values), pickBubbleChartData);
 
-var getTotalDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["deaths_max"]))));
+var getTotalDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["deaths"]))));
 
 var getTotalCivilDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["civilians"]))));
 
 var getTotalInjuries = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["injuries"]))));
+
+var statsRouteSpec = exports.statsRouteSpec = {};
 
 var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
   var store = _ref.store;

@@ -58,6 +58,12 @@ app.get('/incidents', function(req, res, next) {
 
 
 app.listen(PORT, () => console.log("don"))
+getStrikes()
+
+const convertStrToNum = (d) => {
+  const n = Number(d)
+  return typeof n === Number.NaN ? 0 : n
+}
 
 function getStrikes() {
   if (strikes)
@@ -68,13 +74,37 @@ function getStrikes() {
       return droneRes.json()
     })
     .then(function(json) {
-      strikes = json.strike.map(function(d) {
-        d.imgUrl = countryImageMap[d.location] || countryImageMap[d.country] || countryImageMap["Somalia"]
-        return d
-      })
+      strikes = R.map(R.compose(
+        R.omit(["deaths_min"]),
+        (strike) => {
+          strike.deaths = strike.deaths_min
+          return strike
+        },
+        R.evolve({
+          deaths_min: convertStrToNum,
+          civilians: convertStrToNum,
+          injuries: convertStrToNum,
+        }),
+        R.pick([
+          "_id",
+          "deaths_min",
+          "injuries",
+          "country",
+          "narrative",
+          "civilians",
+          "location",
+          "town",
+          "lat",
+          "lon"
+        ])
+      ))(json.strike)
 
       return strikes
     })
+    .catch(console.error)
 }
 
-getStrikes()
+function addImgUrl(d) {
+  d.imgUrl = countryImageMap[d.location] || countryImageMap[d.country] || countryImageMap["Somalia"]
+  return d
+}

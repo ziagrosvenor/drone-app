@@ -10,7 +10,7 @@ const bubbleChartCols = [
   {label: "Civilians", type: "number"},
   {label: "Injuries", type: "number"},
   {label: "Country", type: "string"},
-  {label: "Deaths_max", type: "number"},
+  {label: "Deaths", type: "number"},
 ]
 
 const bubbleChartLabels = R.map(R.compose(
@@ -21,6 +21,9 @@ const bubbleChartLabels = R.map(R.compose(
 const sumDeathsForLocations = R.memoize(R.compose(
   R.values,
   R.reduce((accObj, dat) => {
+    if (!dat.location)
+      return accObj
+
     const location = accObj[dat.location]
 
     accObj[dat.location] = location ?
@@ -30,25 +33,14 @@ const sumDeathsForLocations = R.memoize(R.compose(
     return accObj
   }, {}),
   R.map((dat) => {
-    dat.deaths = parseInt(dat.deaths)
+    dat.deaths = (dat.deaths)
     return dat
   }),
   R.map(R.pick(["location", "deaths"]))
 ))
 
-const numberRegex = /[0-9]{1,6}/
-const convertStrToNum = R.memoize(function(c) {
-	return numberRegex.test(c) ? parseInt(c) : 0
-})
-
-const pickBubbleChartData = R.memoize(R.map(R.compose(
-	R.evolve({
-		civilians: convertStrToNum,
-		injuries: convertStrToNum,
-		deaths_max: convertStrToNum,
-	}),
-	R.pick(bubbleChartLabels)
-)))
+const pickBubbleChartData = R.memoize(R.map(R.pick(bubbleChartLabels)
+))
 
 const pickBubbleChartValues = R.compose(
 	R.map(R.values),
@@ -57,7 +49,7 @@ const pickBubbleChartValues = R.compose(
 
 const getTotalDeaths = R.memoize(R.compose(
 	R.sum,
-	R.map(R.path(["deaths_max"]))
+	R.map(R.path(["deaths"]))
 ))
 
 const getTotalCivilDeaths = R.memoize(R.compose(
@@ -69,6 +61,9 @@ const getTotalInjuries = R.memoize(R.compose(
 	R.sum,
 	R.map(R.path(["injuries"]))
 ))
+
+export const statsRouteSpec = {
+}
 
 export const statsCtrl = ({store}) => ({
   is: 'drone-stats',
