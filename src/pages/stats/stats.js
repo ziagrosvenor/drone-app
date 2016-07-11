@@ -78,26 +78,29 @@ export const statsCtrl = ({store}) => ({
     deadlyArea: Object,
     bubbleChartData: Array,
   },
-  updateState(state) {
-    const locationDeathPairs = sumDeathsForLocations(state.incidents)
+  updateState(strikes) {
+    const locationDeathPairs = sumDeathsForLocations(strikes)
 
     this.deadlyArea = locationDeathPairs.reduce((prev, current) => (prev.deaths > current.deaths) ? prev : current)
     this.cols = chartCols
     this.rows = R.map(R.values, locationDeathPairs)
 
-    const bubbleChartRows = pickBubbleChartValues(state.incidents)
+    const bubbleChartRows = pickBubbleChartValues(strikes)
     this.bubbleRows = bubbleChartRows
     this.bubbleCols = bubbleChartCols
 
-    this.totalDeaths = getTotalDeaths(pickBubbleChartData(state.incidents))
-    this.totalCivilDeaths = getTotalCivilDeaths(pickBubbleChartData(state.incidents))
-    this.totalInjuries = getTotalInjuries(pickBubbleChartData(state.incidents))
+    this.totalDeaths = getTotalDeaths(pickBubbleChartData(strikes))
+    this.totalCivilDeaths = getTotalCivilDeaths(pickBubbleChartData(strikes))
+    this.totalInjuries = getTotalInjuries(pickBubbleChartData(strikes))
   },
   ready() {
     store.onValue((state) => {
-      if (!state.incidents.length)
+      const strikes = R.values(state.entities.strikes)
+
+      if (!strikes)
         return
-      this.updateState(state)
+
+      this.updateState(strikes)
     })
   },
 })

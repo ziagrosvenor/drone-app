@@ -19,7 +19,7 @@ export const mapCtrl = ({store, dispatch}) => ({
     map.latitude = strikes[0].lat;
     map.longitude = strikes[0].lon;
 
-    state.strikes.map((strike, i) => {
+    R.values(state.entities.strikes).map((strike, i) => {
       let dynamicEl =
         document.createElement("google-map-marker");
 

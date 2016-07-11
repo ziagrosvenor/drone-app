@@ -1,20 +1,25 @@
 import Bacon from "baconjs"
 import R from "ramda"
-import {SELECT_TAB, SELECT_COUNTRY,
-FETCH_STRIKES} from "./constants"
+import {normalize, arrayOf, Schema} from "normalizr"
+import {mergeIntoEntity} from "./utils"
+import {SELECT_TAB, SELECT_COUNTRY, FETCH_STRIKES}
+  from "./constants"
 const isFunction = R.is(Function)
+const strike = new Schema("strikes", { idAttribute: "_id" })
+const bus = new Bacon.Bus()
+export const store = bus.toProperty()
 
 let state = {
 	selectedTab: "0",
 	selectedCountry: "yemen",
 	incidents: [],
-	strikes: [],
+  result: [],
+  entities: {
+    strikes: {},
+  },
 	fetchedQueries: [],
 	isLoading: true,
 }
-
-const bus = new Bacon.Bus()
-export const store = bus.toProperty()
 
 function handleSyncAction(state, payload) {
   return isFunction(payload) ?
@@ -25,15 +30,17 @@ function handleSyncAction(state, payload) {
 function handleFetchAction(state, payload) {
   const fetched = payload(state)
     .then((payload) => {
+      let newStrikes
 
       if (payload.query)
         state.fetchedQueries.push(payload.query)
-
         state.fetchedQueries =
           R.dropRepeats(state.fetchedQueries)
 
       if (payload.strikes)
-        state.strikes = R.concat(state.strikes, payload.strikes)
+        newStrikes = normalize(payload.strikes, arrayOf(strike), {mergeIntoEntity})
+        state.result = R.concat(state.result, newStrikes.result)
+        state.entities.strikes = R.merge(state.entities.strikes, newStrikes.entities.strikes)
 
       return state
     })
