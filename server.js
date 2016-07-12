@@ -4,6 +4,7 @@ var Promise = require("bluebird")
 var R = require("ramda")
 var PORT = process.env.PORT || 3005
 var app = express()
+require("heroku-self-ping")("https://covert-war.herokuapp.com")
 
 var strikesByCountry = (country, strikes) => (R.filter(
 	(strike) => R.toLower(strike.country) === country

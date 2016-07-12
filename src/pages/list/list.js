@@ -22,8 +22,14 @@ export const listCtrl = ({store, dispatch}) => ({
     if (state.path !== listRouteSpec.path)
       return
 
+    const strikes = R.takeLast(listRouteSpec.takeLast, strikesByCountry(state))
+
+    if (!strikes || strikes.length === 0) {
+      return
+    }
+
     this.isLoading = state.isLoading
-    this.incidents = R.takeLast(listRouteSpec.takeLast, strikesByCountry(state))
+    this.incidents = strikes
 
     const list = this.$$("iron-list")
     list.notifyResize()

@@ -1,7 +1,7 @@
 import R from "ramda"
 import {bubbleChartLabels} from "./options"
 
-const sumDeathsForLocations = R.memoize(R.compose(
+export const sumDeathsForLocations = R.memoize(R.compose(
   R.values,
   R.reduce((accObj, dat) => {
     if (!dat.location)
@@ -22,25 +22,25 @@ const sumDeathsForLocations = R.memoize(R.compose(
   R.map(R.pick(["location", "deaths"]))
 ))
 
-const pickBubbleChartData = R.memoize(R.map(R.pick(bubbleChartLabels)
+export const pickBubbleChartData = R.memoize(R.map(R.pick(bubbleChartLabels)
 ))
 
-const pickBubbleChartValues = R.compose(
+export const pickBubbleChartValues = R.compose(
 	R.map(R.values),
 	pickBubbleChartData
 )
 
-const getTotalDeaths = R.memoize(R.compose(
+export const getTotalDeaths = R.memoize(R.compose(
 	R.sum,
 	R.map(R.path(["deaths"]))
 ))
 
-const getTotalCivilDeaths = R.memoize(R.compose(
+export const getTotalCivilDeaths = R.memoize(R.compose(
 	R.sum,
 	R.map(R.path(["civilians"]))
 ))
 
-const getTotalInjuries = R.memoize(R.compose(
+export const getTotalInjuries = R.memoize(R.compose(
 	R.sum,
 	R.map(R.path(["injuries"]))
 ))

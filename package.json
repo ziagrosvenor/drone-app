@@ -22,6 +22,7 @@
     "baconjs": "^0.7.84",
     "bluebird": "^3.4.1",
     "express": "^4.14.0",
+    "heroku-self-ping": "^1.1.2",
     "isomorphic-fetch": "^2.2.1",
     "normalizr": "^2.1.0",
     "ramda": "^0.21.0"

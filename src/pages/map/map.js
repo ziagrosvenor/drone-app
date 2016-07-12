@@ -9,36 +9,50 @@ export const mapRouteSpec = {
   path: "/map"
 }
 
+const getStrikes = R.when(
+  R.compose(
+    R.not,
+    R.isNil
+  ),
+  R.compose(
+    R.takeLast(mapRouteSpec.takeLast),
+    R.values
+  )
+)
+
 export const mapCtrl = ({store, dispatch}) => ({
   is: 'drone-map',
   updateState(mapEl, state) {
     if (state.path !== mapRouteSpec.path)
       return
 
-    const strikes = R.takeLast(mapRouteSpec.takeLast, strikesByCountry(state))
+    const strikes = strikesByCountry(state)
 
-    if (!strikes.length) {
+    if (!strikes || strikes.length === 0) {
       return
     }
 
-    mapEl.latitude = strikes[0].lat;
-    mapEl.longitude = strikes[0].lon;
+    const _strikes = getStrikes(state.entities.strikes)
 
-    R.values(state.entities.strikes).map((strike, i) => {
-      let dynamicEl =
+    const markerEls = _strikes.map((strike, i) => {
+      let markerEl =
         document.createElement("google-map-marker");
 
-      dynamicEl.latitude = strike.lat
-      dynamicEl.longitude = strike.lon;
-      dynamicEl.clickEvents = true
-      dynamicEl.title = strike.location
-      dynamicEl.innerHTML = templateMarker(strike)
-
-      mapEl.appendChild(dynamicEl);
+      markerEl.latitude = strike.lat
+      markerEl.longitude = strike.lon;
+      markerEl.clickEvents = true
+      markerEl.title = strike.location
+      markerEl.innerHTML = templateMarker(strike)
+      return markerEl
     })
+
+    markerEls.map((el) => mapEl.appendChild(el));
+    mapEl.resize()
+    mapEl.latitude = strikes[0].lat;
+    mapEl.longitude = strikes[0].lon;
   },
   ready() {
-    const mapEl = this.$$("google-map")
+    const mapEl = this.$$("#strikes-map")
     mapEl.styles = mapStyle
     store.onValue((state) => this.updateState(mapEl, state))
   },

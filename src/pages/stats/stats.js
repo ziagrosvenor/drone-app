@@ -1,7 +1,7 @@
 import R from "ramda"
-import {bubbleChartLabels, chartCols} from "./options"
+import {bubbleChartLabels, bubbleChartCols, chartCols} from "./options"
 import {sumDeathsForLocations, getTotalInjuries,
-  getTotalCivilDeaths, getTotalDeaths, pickBubbleChartData
+  getTotalCivilDeaths, getTotalDeaths, pickBubbleChartData, pickBubbleChartValues,
 } from "./selectors"
 
 export const statsRouteSpec = {
@@ -16,8 +16,8 @@ export const statsCtrl = ({store}) => ({
     deadlyArea: Object,
     bubbleChartData: Array,
   },
-  updateState(strikes) {
-    if (state.path !== statsRouteSpec.path)
+  updateState(path, strikes) {
+    if (path !== statsRouteSpec.path)
       return
 
     const locationDeathPairs = sumDeathsForLocations(strikes)
@@ -38,10 +38,10 @@ export const statsCtrl = ({store}) => ({
     store.onValue((state) => {
       const strikes = R.values(state.entities.strikes)
 
-      if (!strikes)
+      if (!strikes || strikes.length === 0)
         return
 
-      this.updateState(strikes)
+      this.updateState(state.path, strikes)
     })
   },
 })
