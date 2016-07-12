@@ -2,7 +2,7 @@ import Bacon from "baconjs"
 import R from "ramda"
 import {normalize, arrayOf, Schema} from "normalizr"
 import {mergeIntoEntity} from "./utils"
-import {SELECT_TAB, SELECT_COUNTRY, FETCH_STRIKES}
+import {SELECT_TAB, SELECT_COUNTRY, CHANGE_PAGE, FETCH_STRIKES}
   from "./constants"
 const isFunction = R.is(Function)
 const strike = new Schema("strikes", { idAttribute: "_id" })
@@ -21,13 +21,15 @@ let state = {
 	isLoading: true,
 }
 
-function handleSyncAction(state, payload) {
+const strikesPath = R.path(["entities", "strikes"])
+
+function handleSyncAction(payload) {
   return isFunction(payload) ?
     R.merge(state, payload(state)) :
     R.merge(state, payload)
 }
 
-function handleFetchAction(state, payload) {
+function handleFetchAction(payload) {
   const fetched = payload(state)
     .then((payload) => {
       let newStrikes
@@ -38,9 +40,20 @@ function handleFetchAction(state, payload) {
           R.dropRepeats(state.fetchedQueries)
 
       if (payload.strikes)
-        newStrikes = normalize(payload.strikes, arrayOf(strike), {mergeIntoEntity})
+        newStrikes = normalize(
+          payload.strikes,
+          arrayOf(strike),
+          {mergeIntoEntity}
+        )
+
         state.result = R.concat(state.result, newStrikes.result)
-        state.entities.strikes = R.merge(state.entities.strikes, newStrikes.entities.strikes)
+
+        state.entities.strikes = R.merge(
+          strikesPath(state) || {},
+          strikesPath(newStrikes) || {}
+        )
+
+      console.log(state)
 
       return state
     })
@@ -51,6 +64,7 @@ function handleFetchAction(state, payload) {
 const syncActions = {
   [SELECT_COUNTRY]: handleSyncAction,
   [SELECT_TAB]: handleSyncAction,
+  [CHANGE_PAGE]: handleSyncAction,
 }
 
 const fetchActions = {
@@ -61,14 +75,14 @@ export function dispatch(action) {
   const maybeSyncHandler = syncActions[action.type]
 
   if (maybeSyncHandler) {
-		state = maybeSyncHandler(state, action.payload)
-		return bus.push(state)
+		state = maybeSyncHandler(action.payload)
+		return bus.plug(Bacon.constant(state))
   }
 
   const maybeFetchHandler = fetchActions[action.type]
 
   if (maybeFetchHandler) {
-	  return bus.plug(maybeFetchHandler(state, action.payload))
+	  return bus.plug(maybeFetchHandler(action.payload))
   }
 }
 

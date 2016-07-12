@@ -3,15 +3,14 @@ import Promise from "bluebird"
 import fetch from "isomorphic-fetch"
 import querystring from "querystring"
 import {SELECT_COUNTRY, SELECT_TAB, TOGGLE_LOADING,
-FETCH_STRIKES}
-  from "./constants"
+  CHANGE_PAGE, FETCH_STRIKES
+} from "./constants"
 
 const whenIsFunc = R.when(R.is(Function))
 const applyDynamicFilters = (state, filter) => R.map(
   whenIsFunc((fn) => fn(state)),
   filter
 )
-
 
 export const fetchStrikes = (filter = {}) => ({
   type: FETCH_STRIKES,
@@ -51,6 +50,17 @@ export function selectCountry(selectedCountry) {
 
 	return {
 		type: SELECT_COUNTRY,
+		payload,
+	}
+}
+
+export function changePage(path) {
+	const payload = {
+		path,
+	}
+
+	return {
+		type: CHANGE_PAGE,
 		payload,
 	}
 }

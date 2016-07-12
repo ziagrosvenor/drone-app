@@ -21127,6 +21127,9 @@ var appCtrl = exports.appCtrl = function appCtrl(router, _ref) {
       dispatch((0, _actionCreators.selectTab)(tab));
       dispatch((0, _actionCreators.selectCountry)(country));
 
+      if (this.page === "stats") {
+        return;
+      }
       // Fetch resource - TODO loading state
       dispatch((0, _actionCreators.fetchStrikes)({ takeLast: 20, country: country }));
     },
@@ -21240,8 +21243,6 @@ function handleSyncAction(payload) {
 }
 
 function handleFetchAction(payload) {
-  console.log(state);
-
   var fetched = payload(state).then(function (payload) {
     var newStrikes = void 0;
 
@@ -21355,8 +21356,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.listCtrl = exports.listRouteSpec = undefined;
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
 var _selectors = require("../selectors");
 
 var _ramda = require("ramda");
@@ -21389,15 +21388,16 @@ var listCtrl = exports.listCtrl = function listCtrl(_ref) {
       }
     },
     updateState: function updateState(state) {
-      console.log(_typeof(state.path));
-      console.log(_typeof(listRouteSpec.path));
-
-      console.log(state.path, listRouteSpec.path);
-
       if (state.path !== listRouteSpec.path) return;
 
+      var strikes = _ramda2.default.takeLast(listRouteSpec.takeLast, (0, _selectors.strikesByCountry)(state));
+
+      if (!strikes || strikes.length === 0) {
+        return;
+      }
+
       this.isLoading = state.isLoading;
-      this.incidents = _ramda2.default.takeLast(listRouteSpec.takeLast, (0, _selectors.strikesByCountry)(state));
+      this.incidents = strikes;
 
       var list = this.$$("iron-list");
       list.notifyResize();
@@ -21605,6 +21605,8 @@ var mapRouteSpec = exports.mapRouteSpec = {
   path: "/map"
 };
 
+var getStrikes = _ramda2.default.when(_ramda2.default.compose(_ramda2.default.not, _ramda2.default.isNil), _ramda2.default.compose(_ramda2.default.takeLast(mapRouteSpec.takeLast), _ramda2.default.values));
+
 var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
   var store = _ref.store;
   var dispatch = _ref.dispatch;
@@ -21613,31 +21615,36 @@ var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
     updateState: function updateState(mapEl, state) {
       if (state.path !== mapRouteSpec.path) return;
 
-      var strikes = _ramda2.default.takeLast(mapRouteSpec.takeLast, (0, _selectors.strikesByCountry)(state));
+      var strikes = (0, _selectors.strikesByCountry)(state);
 
-      if (!strikes.length) {
+      if (!strikes || strikes.length === 0) {
         return;
       }
 
+      var _strikes = getStrikes(state.entities.strikes);
+
+      var markerEls = _strikes.map(function (strike, i) {
+        var markerEl = document.createElement("google-map-marker");
+
+        markerEl.latitude = strike.lat;
+        markerEl.longitude = strike.lon;
+        markerEl.clickEvents = true;
+        markerEl.title = strike.location;
+        markerEl.innerHTML = templateMarker(strike);
+        return markerEl;
+      });
+
+      markerEls.map(function (el) {
+        return mapEl.appendChild(el);
+      });
+      mapEl.resize();
       mapEl.latitude = strikes[0].lat;
       mapEl.longitude = strikes[0].lon;
-
-      _ramda2.default.values(state.entities.strikes).map(function (strike, i) {
-        var dynamicEl = document.createElement("google-map-marker");
-
-        dynamicEl.latitude = strike.lat;
-        dynamicEl.longitude = strike.lon;
-        dynamicEl.clickEvents = true;
-        dynamicEl.title = strike.location;
-        dynamicEl.innerHTML = templateMarker(strike);
-
-        mapEl.appendChild(dynamicEl);
-      });
     },
     ready: function ready() {
       var _this = this;
 
-      var mapEl = this.$$("google-map");
+      var mapEl = this.$$("#strikes-map");
       mapEl.styles = _mapStyle2.default;
       store.onValue(function (state) {
         return _this.updateState(mapEl, state);
@@ -21647,7 +21654,7 @@ var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
 };
 
 function templateMarker(content) {
-  return "<div>\n    <p>" + content.narrative + "</p>\n    <p>" + (content.town || content.location) + "</p>\n  </div>";
+  return "<div>\n    <p>" + content.narrative + "</p>\n    <p>" + (content.town || content.location) + "</p>\n    </div>";
 }
 
 },{"../selectors":102,"./map-style":100,"ramda":91}],102:[function(require,module,exports){
@@ -21693,6 +21700,11 @@ var bubbleChartLabels = exports.bubbleChartLabels = _ramda2.default.map(_ramda2.
 },{"ramda":91}],104:[function(require,module,exports){
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getTotalInjuries = exports.getTotalCivilDeaths = exports.getTotalDeaths = exports.pickBubbleChartValues = exports.pickBubbleChartData = exports.sumDeathsForLocations = undefined;
+
 var _ramda = require("ramda");
 
 var _ramda2 = _interopRequireDefault(_ramda);
@@ -21701,7 +21713,7 @@ var _options = require("./options");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var sumDeathsForLocations = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.values, _ramda2.default.reduce(function (accObj, dat) {
+var sumDeathsForLocations = exports.sumDeathsForLocations = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.values, _ramda2.default.reduce(function (accObj, dat) {
   if (!dat.location) return accObj;
 
   var location = accObj[dat.location];
@@ -21714,15 +21726,15 @@ var sumDeathsForLocations = _ramda2.default.memoize(_ramda2.default.compose(_ram
   return dat;
 }), _ramda2.default.map(_ramda2.default.pick(["location", "deaths"]))));
 
-var pickBubbleChartData = _ramda2.default.memoize(_ramda2.default.map(_ramda2.default.pick(_options.bubbleChartLabels)));
+var pickBubbleChartData = exports.pickBubbleChartData = _ramda2.default.memoize(_ramda2.default.map(_ramda2.default.pick(_options.bubbleChartLabels)));
 
-var pickBubbleChartValues = _ramda2.default.compose(_ramda2.default.map(_ramda2.default.values), pickBubbleChartData);
+var pickBubbleChartValues = exports.pickBubbleChartValues = _ramda2.default.compose(_ramda2.default.map(_ramda2.default.values), pickBubbleChartData);
 
-var getTotalDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["deaths"]))));
+var getTotalDeaths = exports.getTotalDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["deaths"]))));
 
-var getTotalCivilDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["civilians"]))));
+var getTotalCivilDeaths = exports.getTotalCivilDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["civilians"]))));
 
-var getTotalInjuries = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["injuries"]))));
+var getTotalInjuries = exports.getTotalInjuries = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["injuries"]))));
 
 },{"./options":103,"ramda":91}],105:[function(require,module,exports){
 "use strict";
@@ -21756,8 +21768,8 @@ var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
       deadlyArea: Object,
       bubbleChartData: Array
     },
-    updateState: function updateState(strikes) {
-      if (state.path !== statsRouteSpec.path) return;
+    updateState: function updateState(path, strikes) {
+      if (path !== statsRouteSpec.path) return;
 
       var locationDeathPairs = (0, _selectors.sumDeathsForLocations)(strikes);
 
@@ -21767,9 +21779,9 @@ var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
       this.cols = _options.chartCols;
       this.rows = _ramda2.default.map(_ramda2.default.values, locationDeathPairs);
 
-      var bubbleChartRows = pickBubbleChartValues(strikes);
+      var bubbleChartRows = (0, _selectors.pickBubbleChartValues)(strikes);
       this.bubbleRows = bubbleChartRows;
-      this.bubbleCols = bubbleChartCols;
+      this.bubbleCols = _options.bubbleChartCols;
 
       this.totalDeaths = (0, _selectors.getTotalDeaths)((0, _selectors.pickBubbleChartData)(strikes));
       this.totalCivilDeaths = (0, _selectors.getTotalCivilDeaths)((0, _selectors.pickBubbleChartData)(strikes));
@@ -21781,9 +21793,9 @@ var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
       store.onValue(function (state) {
         var strikes = _ramda2.default.values(state.entities.strikes);
 
-        if (!strikes) return;
+        if (!strikes || strikes.length === 0) return;
 
-        _this.updateState(strikes);
+        _this.updateState(state.path, strikes);
       });
     }
   };

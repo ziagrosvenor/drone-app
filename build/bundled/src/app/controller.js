@@ -20,14 +20,17 @@ export const appCtrl = (router, {store, dispatch}) => ({
   is: 'my-app',
   selectTab(e) {
     const tab = e.target.id.split("tab")[1]
-      const country = tabCountryMap[tab]
+    const country = tabCountryMap[tab]
 
-      // Update app state
-      dispatch(selectTab(tab))
-      dispatch(selectCountry(country))
+    // Update app state
+    dispatch(selectTab(tab))
+    dispatch(selectCountry(country))
 
-      // Fetch resource - TODO loading state
-      dispatch(fetchStrikes({takeLast: 20, country}))
+    if (this.page === "stats") {
+      return
+    }
+    // Fetch resource - TODO loading state
+    dispatch(fetchStrikes({takeLast: 20, country}))
   },
   properties: {
 
