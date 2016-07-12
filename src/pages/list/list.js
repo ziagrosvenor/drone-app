@@ -1,8 +1,12 @@
 import {strikesByCountry} from "../selectors"
+import R from "ramda"
 
 export const listRouteSpec = {
-  country(state) { return state.selectedCountry },
-  takeLast: 15,
+  data: {
+    country(state) { return state.selectedCountry },
+    takeLast: 15,
+  },
+  path: "/list",
 }
 
 export const listCtrl = ({store, dispatch}) => ({
@@ -15,8 +19,12 @@ export const listCtrl = ({store, dispatch}) => ({
     },
   },
   updateState(state) {
+    if (state.path !== listRouteSpec.path)
+      return
+
     this.isLoading = state.isLoading
-    this.incidents = strikesByCountry(state)
+    this.incidents = R.takeLast(listRouteSpec.takeLast, strikesByCountry(state))
+
     const list = this.$$("iron-list")
     list.notifyResize()
   },
