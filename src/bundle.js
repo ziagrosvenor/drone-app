@@ -20987,6 +20987,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.fetchStrikes = undefined;
 exports.selectTab = selectTab;
 exports.selectCountry = selectCountry;
+exports.changePage = changePage;
 exports.setLoading = setLoading;
 
 var _ramda = require("ramda");
@@ -21055,6 +21056,17 @@ function selectCountry(selectedCountry) {
   };
 }
 
+function changePage(path) {
+  var payload = {
+    path: path
+  };
+
+  return {
+    type: _constants.CHANGE_PAGE,
+    payload: payload
+  };
+}
+
 function setLoading(isLoading) {
   return {
     type: _constants.TOGGLE_LOADING,
@@ -21072,6 +21084,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 var SELECT_TAB = exports.SELECT_TAB = Symbol("SELECT_TAB");
 var SELECT_COUNTRY = exports.SELECT_COUNTRY = Symbol("SELECT_COUNTRY");
+var CHANGE_PAGE = exports.CHANGE_PAGE = Symbol("CHANGE_PAGE");
 var TOGGLE_LOADING = exports.TOGGLE_LOADING = Symbol("TOGGLE_LOADING");
 var FETCH_STRIKES = exports.FETCH_STRIKES = Symbol("FETCH_STRIKES");
 
@@ -21157,16 +21170,23 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.routerFactory = undefined;
 
+var _ramda = require("ramda");
+
+var _ramda2 = _interopRequireDefault(_ramda);
+
 var _actionCreators = require("./action-creators");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var routerFactory = exports.routerFactory = function routerFactory(_ref, pageSpec) {
   var dispatch = _ref.dispatch;
   return function (path) {
-    dispatch((0, _actionCreators.fetchStrikes)(pageSpec[path]));
+    dispatch((0, _actionCreators.fetchStrikes)(_ramda2.default.path(["data"], pageSpec[path])));
+    dispatch((0, _actionCreators.changePage)("/" + path));
   };
 };
 
-},{"./action-creators":92}],96:[function(require,module,exports){
+},{"./action-creators":92,"ramda":91}],96:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21213,11 +21233,15 @@ var state = {
   isLoading: true
 };
 
-function handleSyncAction(state, payload) {
+var strikesPath = _ramda2.default.path(["entities", "strikes"]);
+
+function handleSyncAction(payload) {
   return isFunction(payload) ? _ramda2.default.merge(state, payload(state)) : _ramda2.default.merge(state, payload);
 }
 
-function handleFetchAction(state, payload) {
+function handleFetchAction(payload) {
+  console.log(state);
+
   var fetched = payload(state).then(function (payload) {
     var newStrikes = void 0;
 
@@ -21225,8 +21249,12 @@ function handleFetchAction(state, payload) {
     state.fetchedQueries = _ramda2.default.dropRepeats(state.fetchedQueries);
 
     if (payload.strikes) newStrikes = (0, _normalizr.normalize)(payload.strikes, (0, _normalizr.arrayOf)(strike), { mergeIntoEntity: _utils.mergeIntoEntity });
+
     state.result = _ramda2.default.concat(state.result, newStrikes.result);
-    state.entities.strikes = _ramda2.default.merge(state.entities.strikes, newStrikes.entities.strikes);
+
+    state.entities.strikes = _ramda2.default.merge(strikesPath(state) || {}, strikesPath(newStrikes) || {});
+
+    console.log(state);
 
     return state;
   });
@@ -21234,7 +21262,7 @@ function handleFetchAction(state, payload) {
   return _baconjs2.default.fromPromise(fetched);
 }
 
-var syncActions = (_syncActions = {}, _defineProperty(_syncActions, _constants.SELECT_COUNTRY, handleSyncAction), _defineProperty(_syncActions, _constants.SELECT_TAB, handleSyncAction), _syncActions);
+var syncActions = (_syncActions = {}, _defineProperty(_syncActions, _constants.SELECT_COUNTRY, handleSyncAction), _defineProperty(_syncActions, _constants.SELECT_TAB, handleSyncAction), _defineProperty(_syncActions, _constants.CHANGE_PAGE, handleSyncAction), _syncActions);
 
 var fetchActions = _defineProperty({}, _constants.FETCH_STRIKES, handleFetchAction);
 
@@ -21242,14 +21270,14 @@ function dispatch(action) {
   var maybeSyncHandler = syncActions[action.type];
 
   if (maybeSyncHandler) {
-    state = maybeSyncHandler(state, action.payload);
-    return bus.push(state);
+    state = maybeSyncHandler(action.payload);
+    return bus.plug(_baconjs2.default.constant(state));
   }
 
   var maybeFetchHandler = fetchActions[action.type];
 
   if (maybeFetchHandler) {
-    return bus.plug(maybeFetchHandler(state, action.payload));
+    return bus.plug(maybeFetchHandler(action.payload));
   }
 }
 
@@ -21319,7 +21347,7 @@ window.mapCtrl = (0, _map.mapCtrl)(_store2.default);
 window.statsCtrl = (0, _stats.statsCtrl)(_store2.default);
 window.listCtrl = (0, _list.listCtrl)(_store2.default);
 
-},{"./app/controller":94,"./app/router":95,"./app/store":96,"./pages/list/list":99,"./pages/map/map":101,"./pages/stats/stats":103}],99:[function(require,module,exports){
+},{"./app/controller":94,"./app/router":95,"./app/store":96,"./pages/list/list":99,"./pages/map/map":101,"./pages/stats/stats":105}],99:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21327,14 +21355,25 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.listCtrl = exports.listRouteSpec = undefined;
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var _selectors = require("../selectors");
 
-var listRouteSpec = exports.listRouteSpec = {
-  country: function country(state) {
-    return state.selectedCountry;
-  },
+var _ramda = require("ramda");
 
-  takeLast: 15
+var _ramda2 = _interopRequireDefault(_ramda);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var listRouteSpec = exports.listRouteSpec = {
+  data: {
+    country: function country(state) {
+      return state.selectedCountry;
+    },
+
+    takeLast: 15
+  },
+  path: "/list"
 };
 
 var listCtrl = exports.listCtrl = function listCtrl(_ref) {
@@ -21350,8 +21389,16 @@ var listCtrl = exports.listCtrl = function listCtrl(_ref) {
       }
     },
     updateState: function updateState(state) {
+      console.log(_typeof(state.path));
+      console.log(_typeof(listRouteSpec.path));
+
+      console.log(state.path, listRouteSpec.path);
+
+      if (state.path !== listRouteSpec.path) return;
+
       this.isLoading = state.isLoading;
-      this.incidents = (0, _selectors.strikesByCountry)(state);
+      this.incidents = _ramda2.default.takeLast(listRouteSpec.takeLast, (0, _selectors.strikesByCountry)(state));
+
       var list = this.$$("iron-list");
       list.notifyResize();
     },
@@ -21365,7 +21412,7 @@ var listCtrl = exports.listCtrl = function listCtrl(_ref) {
   };
 };
 
-},{"../selectors":102}],100:[function(require,module,exports){
+},{"../selectors":102,"ramda":91}],100:[function(require,module,exports){
 module.exports=[
 		{
 			"featureType": "water",
@@ -21539,6 +21586,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.mapCtrl = exports.mapRouteSpec = undefined;
 
+var _ramda = require("ramda");
+
+var _ramda2 = _interopRequireDefault(_ramda);
+
 var _selectors = require("../selectors");
 
 var _mapStyle = require("./map-style");
@@ -21548,7 +21599,10 @@ var _mapStyle2 = _interopRequireDefault(_mapStyle);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var mapRouteSpec = exports.mapRouteSpec = {
-  takeLast: 150
+  data: {
+    takeLast: 150
+  },
+  path: "/map"
 };
 
 var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
@@ -21556,36 +21610,37 @@ var mapCtrl = exports.mapCtrl = function mapCtrl(_ref) {
   var dispatch = _ref.dispatch;
   return {
     is: 'drone-map',
-    updateState: function updateState(state) {
-      var map = this.$$("google-map");
-      var strikes = (0, _selectors.strikesByCountry)(state);
-      map.styles = _mapStyle2.default;
+    updateState: function updateState(mapEl, state) {
+      if (state.path !== mapRouteSpec.path) return;
+
+      var strikes = _ramda2.default.takeLast(mapRouteSpec.takeLast, (0, _selectors.strikesByCountry)(state));
 
       if (!strikes.length) {
         return;
       }
 
-      map.latitude = strikes[0].lat;
-      map.longitude = strikes[0].lon;
+      mapEl.latitude = strikes[0].lat;
+      mapEl.longitude = strikes[0].lon;
 
-      R.values(state.entities.strikes).map(function (strike, i) {
+      _ramda2.default.values(state.entities.strikes).map(function (strike, i) {
         var dynamicEl = document.createElement("google-map-marker");
 
         dynamicEl.latitude = strike.lat;
         dynamicEl.longitude = strike.lon;
         dynamicEl.clickEvents = true;
         dynamicEl.title = strike.location;
-
         dynamicEl.innerHTML = templateMarker(strike);
 
-        map.appendChild(dynamicEl);
+        mapEl.appendChild(dynamicEl);
       });
     },
     ready: function ready() {
       var _this = this;
 
+      var mapEl = this.$$("google-map");
+      mapEl.styles = _mapStyle2.default;
       store.onValue(function (state) {
-        _this.updateState(state);
+        return _this.updateState(mapEl, state);
       });
     }
   };
@@ -21595,7 +21650,7 @@ function templateMarker(content) {
   return "<div>\n    <p>" + content.narrative + "</p>\n    <p>" + (content.town || content.location) + "</p>\n  </div>";
 }
 
-},{"../selectors":102,"./map-style":100}],102:[function(require,module,exports){
+},{"../selectors":102,"./map-style":100,"ramda":91}],102:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21621,7 +21676,7 @@ var strikesByCountry = exports.strikesByCountry = function strikesByCountry(stat
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.statsCtrl = exports.statsRouteSpec = undefined;
+exports.bubbleChartLabels = exports.bubbleChartCols = exports.chartCols = undefined;
 
 var _ramda = require("ramda");
 
@@ -21629,11 +21684,22 @@ var _ramda2 = _interopRequireDefault(_ramda);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var chartCols = [{ label: "Location", type: "string" }, { label: "Lives lost", type: "number" }];
+var chartCols = exports.chartCols = [{ label: "Location", type: "string" }, { label: "Lives lost", type: "number" }];
 
-var bubbleChartCols = [{ label: "Location", type: "string" }, { label: "Civilians", type: "number" }, { label: "Injuries", type: "number" }, { label: "Country", type: "string" }, { label: "Deaths", type: "number" }];
+var bubbleChartCols = exports.bubbleChartCols = [{ label: "Location", type: "string" }, { label: "Civilians", type: "number" }, { label: "Injuries", type: "number" }, { label: "Country", type: "string" }, { label: "Deaths", type: "number" }];
 
-var bubbleChartLabels = _ramda2.default.map(_ramda2.default.compose(_ramda2.default.toLower, _ramda2.default.path(["label"])))(bubbleChartCols);
+var bubbleChartLabels = exports.bubbleChartLabels = _ramda2.default.map(_ramda2.default.compose(_ramda2.default.toLower, _ramda2.default.path(["label"])))(bubbleChartCols);
+
+},{"ramda":91}],104:[function(require,module,exports){
+"use strict";
+
+var _ramda = require("ramda");
+
+var _ramda2 = _interopRequireDefault(_ramda);
+
+var _options = require("./options");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var sumDeathsForLocations = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.values, _ramda2.default.reduce(function (accObj, dat) {
   if (!dat.location) return accObj;
@@ -21648,7 +21714,7 @@ var sumDeathsForLocations = _ramda2.default.memoize(_ramda2.default.compose(_ram
   return dat;
 }), _ramda2.default.map(_ramda2.default.pick(["location", "deaths"]))));
 
-var pickBubbleChartData = _ramda2.default.memoize(_ramda2.default.map(_ramda2.default.pick(bubbleChartLabels)));
+var pickBubbleChartData = _ramda2.default.memoize(_ramda2.default.map(_ramda2.default.pick(_options.bubbleChartLabels)));
 
 var pickBubbleChartValues = _ramda2.default.compose(_ramda2.default.map(_ramda2.default.values), pickBubbleChartData);
 
@@ -21658,7 +21724,27 @@ var getTotalCivilDeaths = _ramda2.default.memoize(_ramda2.default.compose(_ramda
 
 var getTotalInjuries = _ramda2.default.memoize(_ramda2.default.compose(_ramda2.default.sum, _ramda2.default.map(_ramda2.default.path(["injuries"]))));
 
-var statsRouteSpec = exports.statsRouteSpec = {};
+},{"./options":103,"ramda":91}],105:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.statsCtrl = exports.statsRouteSpec = undefined;
+
+var _ramda = require("ramda");
+
+var _ramda2 = _interopRequireDefault(_ramda);
+
+var _options = require("./options");
+
+var _selectors = require("./selectors");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var statsRouteSpec = exports.statsRouteSpec = {
+  path: "/stats"
+};
 
 var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
   var store = _ref.store;
@@ -21671,21 +21757,23 @@ var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
       bubbleChartData: Array
     },
     updateState: function updateState(strikes) {
-      var locationDeathPairs = sumDeathsForLocations(strikes);
+      if (state.path !== statsRouteSpec.path) return;
+
+      var locationDeathPairs = (0, _selectors.sumDeathsForLocations)(strikes);
 
       this.deadlyArea = locationDeathPairs.reduce(function (prev, current) {
         return prev.deaths > current.deaths ? prev : current;
       });
-      this.cols = chartCols;
+      this.cols = _options.chartCols;
       this.rows = _ramda2.default.map(_ramda2.default.values, locationDeathPairs);
 
       var bubbleChartRows = pickBubbleChartValues(strikes);
       this.bubbleRows = bubbleChartRows;
       this.bubbleCols = bubbleChartCols;
 
-      this.totalDeaths = getTotalDeaths(pickBubbleChartData(strikes));
-      this.totalCivilDeaths = getTotalCivilDeaths(pickBubbleChartData(strikes));
-      this.totalInjuries = getTotalInjuries(pickBubbleChartData(strikes));
+      this.totalDeaths = (0, _selectors.getTotalDeaths)((0, _selectors.pickBubbleChartData)(strikes));
+      this.totalCivilDeaths = (0, _selectors.getTotalCivilDeaths)((0, _selectors.pickBubbleChartData)(strikes));
+      this.totalInjuries = (0, _selectors.getTotalInjuries)((0, _selectors.pickBubbleChartData)(strikes));
     },
     ready: function ready() {
       var _this = this;
@@ -21701,4 +21789,4 @@ var statsCtrl = exports.statsCtrl = function statsCtrl(_ref) {
   };
 };
 
-},{"ramda":91}]},{},[98]);
+},{"./options":103,"./selectors":104,"ramda":91}]},{},[98]);
